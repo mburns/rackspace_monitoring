@@ -1,0 +1,24 @@
+type    : agent.plugin
+label   : <%= @label %>
+period  : <%= @period || 60 %>
+timeout : <%= @timeout || 10 %>
+details :
+    file : check-mtime.sh
+    args : [ "<%= @file_to_check %>" ]
+alarms:
+    file-mod-age:
+        label: File Modification Age
+        notification_plan_id: <%= @notification_plan_id %>
+        criteria: |
+<% if @consecutive_count != nil -%>
+            :set consecutiveCount=<%= @consecutive_count %>
+<% end -%>
+            if (metric['age'] > <%= @frontend_age_critical_min %>) {
+              return new AlarmStatus(CRITICAL, 'file last modified #{age} seconds ago.');
+            }
+            
+            if (metric['age'] > <%= @frontend_age_warning_min %>) {
+              return new AlarmStatus(WARNING, 'file last modified #{age} seconds ago.');
+            }
+            
+            return new AlarmStatus(OK, 'file last modified #{age} seconds ago.');

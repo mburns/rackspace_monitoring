@@ -1,0 +1,24 @@
+type    : agent.plugin
+label   : <%= @label %>
+period  : <%= @period || 120 %>
+timeout : <%= @timeout || 30 %>
+details :
+    file : ntp_offset.sh
+alarms:
+    ntp-offset:
+        label: Clock sync
+        notification_plan_id: <%= @notification_plan_id %>
+        criteria: |
+<% if @consecutive_count != nil -%>
+            :set consecutiveCount=<%= @consecutive_count %>
+<% end -%>
+            if (metric['ntp_offset'] > 5000 || metric['ntp_offset'] < -5000) {
+              return new AlarmStatus(CRITICAL, 'clock drift is #{ntp_offset} ms, outside of your critical treshold of 5s');
+            }
+            if (metric['ntp_offset'] > 2000 || metric['ntp_offset'] < -2000) {
+              return new AlarmStatus(WARNING, 'clock drift is #{ntp_offset} ms, outside of your warning treshold of 2s');
+            }
+            if (metric['active_peers'] < 2) {
+              return new AlarmStatus(WARNING, 'ntpd is only using #{active_peers} peers to sync the system clock');
+            }
+            return new AlarmStatus(OK, 'system clock is in sync with #{active_peers} peers');

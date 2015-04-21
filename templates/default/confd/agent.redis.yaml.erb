@@ -1,0 +1,18 @@
+<% _host = @host || 'localhost' -%>
+<% _port = @port || '6379' -%>
+type    : agent.redis
+label   : <%= @label %>
+period  : <%= @period || 60 %>
+timeout : <%= @timeout || 5 %>
+details :
+   host : <%= _host %> 
+   port : <%= _port %> 
+alarms:
+    info-reply:
+        label: Response time
+        notification_plan_id: <%= @notification_plan_id %>
+        criteria: |
+<% if @consecutive_count != nil -%>
+            :set consecutiveCount=<%= @consecutive_count %>
+<% end -%>
+            return new AlarmStatus(OK, 'Redis responded to INFO in less than <%= @timeout || 5 %>s');

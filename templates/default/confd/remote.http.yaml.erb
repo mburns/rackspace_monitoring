@@ -1,0 +1,47 @@
+type    : remote.http
+label   : <%= @label %>
+period  : <%= @period || 60 %>
+timeout : <%= @timeout || 10 %>
+<% if @target_alias -%>
+target_alias: <%= @target_alias %>
+<% end -%>
+<% if @target_hostname -%>
+target_hostname: <%= @target_hostname %>
+<% end -%>
+<% if @target_resolver -%>
+target_resolver: <%= @target_resolver %>
+<% end -%>
+monitoring_zones_poll:
+<% @monitoring_zones.each do |zone| -%>
+               - <%= zone %>
+<% end -%>
+details :
+    url : <%= @url %>
+alarms:
+    response-code:
+        label: Response code
+        notification_plan_id: <%= @notification_plan_id %>
+        criteria: |
+<% if @consecutive_count != nil -%>
+            :set consecutiveCount=<%= @consecutive_count %>
+<% end -%>
+            if (metric['code'] != '<%= @expected_code || 200 %>') {
+              return new AlarmStatus(CRITICAL, 'Server returned #{code}, expected <%= @expected_code || 200 %>');
+            }
+            return new AlarmStatus(OK, 'Server returned #{code} as expected');
+<% if /^https:/.match(@url) -%>
+    cert-expiry:
+        label: Certificate validity
+        notification_plan_id: <%= @notification_plan_id %>
+        criteria: |
+<% if @consecutive_count != nil -%>
+            :set consecutiveCount=<%= @consecutive_count %>
+<% end -%>
+            if (metric['cert_end_in'] < 259200) {
+              return new AlarmStatus(CRITICAL, 'Certificate expires in less than 3 days');
+            }
+            if (metric['cert_end_in'] < 604800) {
+              return new AlarmStatus(WARNING, 'Certificate expires in less than 1 week');
+            }
+            return new AlarmStatus(OK, 'Certificate valid for more than 1 week');
+<% end -%>

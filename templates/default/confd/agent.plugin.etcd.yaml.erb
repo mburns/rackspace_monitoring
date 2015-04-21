@@ -1,0 +1,28 @@
+<% host = @url || 'http://localhost:4001' -%>
+
+type    : agent.plugin
+label   : <%= @label %>
+period  : <%= @period || 60 %>
+timeout : <%= @timeout || 30 %>
+details :
+    file : etcd.py
+    args : [ "--url", "<%= host %>" ]
+alarms:
+    node-state:
+        label: Node state
+        notification_plan_id: <%= @notification_plan_id %>
+        criteria: |
+<% if @consecutive_count != nil -%>
+            :set consecutiveCount=<%= @consecutive_count %>
+<% end -%>
+            if (metric['state'] != 'follower' && metric['state'] != 'leader') {
+              return new AlarmStatus(CRITICAL, 'Node is neither leader nor follower.');
+            }
+            
+            if (metric['state'] == 'follower') {
+              return new AlarmStatus(OK, 'Node is following #{leader}.');
+            }
+            
+            if (metric['state'] == 'leader') {
+              return new AlarmStatus(OK, 'Node is leading the cluster.');
+            }

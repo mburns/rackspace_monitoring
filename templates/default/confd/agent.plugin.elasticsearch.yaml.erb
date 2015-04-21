@@ -1,0 +1,28 @@
+type    : agent.plugin
+label   : <%= @label %>
+period  : <%= @period || 120 %>
+timeout : <%= @timeout || 30 %>
+details :
+    file : elasticsearch.py
+    args : [ "--host=http://<%= node[:fqdn] %>:9200/", "--cluster-health" ]
+alarms:
+    cluster-status:
+        label: Cluster health
+        notification_plan_id: <%= @notification_plan_id %>
+        criteria: |
+<% if @consecutive_count != nil -%>
+            :set consecutiveCount=<%= @consecutive_count %>
+<% end -%>
+            if (metric['number_of_nodes'] < 4) {
+              return new AlarmStatus(CRITICAL, 'Only #{number_of_nodes} active, expected 4');
+            }
+            if (metric['status'] == 'red') {
+              return new AlarmStatus(CRITICAL, 'Some primary shards are inactive');
+            }
+            if (metric['status'] == 'yellow') {
+              return new AlarmStatus(WARNING, 'All primary shards are active but some replica shards are inactive.');
+            }
+            if (metric['status'] == 'green') {
+              return new AlarmStatus(OK, 'All primary and replica shards are active.');
+            }
+            return new AlarmStatus(CRITICAL, 'Unknown cluster status received: #{status}.');

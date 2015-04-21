@@ -1,0 +1,23 @@
+# CHEF MANAGED FILE: DO NOT EDIT
+# Controlling Cookbook: <%= @cookbook_name %>
+#
+
+type: agent.memory
+label: Memory
+disabled: <%= node['monitoring']['memory']['disabled'] %>
+period: <%= node['monitoring']['memory']['period'] %>
+timeout: <%= node['monitoring']['memory']['timeout'] %>
+<% if node['monitoring']['memory']['alarm'] == true %>
+alarms:
+    alarm-memory:
+        label: Memory Usage
+        notification_plan_id: <%= node['monitoring']['notification_plan_id'] %>
+        criteria: |
+            if (percentage(metric['actual_used'], metric['total']) > <%= node['monitoring']['memory']['crit'] %> ) {
+              return new AlarmStatus(CRITICAL, "Memory usage is above your critical threshold of <%= node['monitoring']['memory']['crit'] %>%");
+            }
+            if (percentage(metric['actual_used'], metric['total']) > <%= node['monitoring']['memory']['warn'] %> ) {
+              return new AlarmStatus(WARNING, "Memory usage is above your warning threshold of <%= node['monitoring']['memory']['warn'] %>%");
+            }
+            return new AlarmStatus(OK, "Memory usage is below your warning threshold of <%= node['monitoring']['memory']['warn'] %>%");
+<% end %>
