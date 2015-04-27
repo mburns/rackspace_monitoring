@@ -1,0 +1,34 @@
+type    : remote.ping
+label   : <%= @label %>
+period  : <%= @period || 60 %>
+timeout : <%= @timeout || 30 %>
+<% if @target_alias -%>
+target_alias: <%= @target_alias %>
+<% end -%>
+<% if @target_hostname -%>
+target_hostname: <%= @target_hostname %>
+<% end -%>
+<% if @target_resolver -%>
+target_resolver: <%= @target_resolver %>
+<% end -%>
+monitoring_zones_poll:
+<% @monitoring_zones.each do |zone| -%>
+               - <%= zone %>
+<% end -%>
+details :
+    count : <%= @count || 5 %>
+alarms:
+    packet-loss:
+        label: Packet loss
+        notification_plan_id: <%= @notification_plan_id %>
+        criteria: |
+<% if @consecutive_count != nil -%>
+            :set consecutiveCount=<%= @consecutive_count %>
+<% end -%>
+            if (metric['available'] < 80) {
+              return new AlarmStatus(CRITICAL, 'Packet loss is greater than 20%');
+            }
+            if (metric['available'] < 95) {
+              return new AlarmStatus(WARNING, 'Packet loss is greater than 5%');
+            }
+            return new AlarmStatus(OK, 'Packet loss is normal');

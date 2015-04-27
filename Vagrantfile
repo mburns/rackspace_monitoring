@@ -13,6 +13,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.hostname = 'rackspace_monitoring-berkshelf'
 
+  if Vagrant.hasPlugin?("vagrant-cachier")
+    config.cache.auto_detect = true
+    config.cache.scope = :machine
+    config.omnibus.cache_packages = true
+    config.omnibus.chef_version = "12.2.1"
+  end
+
   # Set the version of chef to install using the vagrant-omnibus plugin
   # NOTE: You will need to install the vagrant-omnibus plugin:
   #
