@@ -7,6 +7,8 @@ AllCops:
     - '**/Rakefile'
     - '**/Thorfile'
     - '**/Guardfile'
+    - '**/metadata.rb'
+    - '**/*.rb'
   Exclude:
     - vendor/**/*
 

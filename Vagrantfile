@@ -7,29 +7,24 @@ VAGRANTFILE_API_VERSION = '2'
 Vagrant.require_version '>= 1.5.0'
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  # All Vagrant configuration is done here. The most common configuration
-  # options are documented and commented below. For a complete reference,
-  # please see the online documentation at vagrantup.com.
+  config.vm.hostname = 'rackspace-monitoring-cookbook'
 
-  config.vm.hostname = 'rackspace_monitoring-berkshelf'
-
-  if Vagrant.hasPlugin?('vagrant-cachier')
+  #   $ vagrant plugin install vagrant-cachier
+  if Vagrant.has_plugin?('vagrant-cachier')
     config.cache.auto_detect = true
     config.cache.scope = :machine
-    config.omnibus.cache_packages = true
-    config.omnibus.chef_version = '12.2.1'
+    config.cache.synced_folder_opts = {
+      type: :nfs,
+      mount_options: ['rw', 'vers=3', 'tcp', 'nolock']
+    }
   end
 
-  # Set the version of chef to install using the vagrant-omnibus plugin
-  # NOTE: You will need to install the vagrant-omnibus plugin:
-  #
   #   $ vagrant plugin install vagrant-omnibus
-  #
   if Vagrant.has_plugin?('vagrant-omnibus')
-    config.omnibus.chef_version = 'latest'
+    config.omnibus.chef_version = '12.2.1'
+    config.omnibus.cache_packages = true
   end
 
-  # Every Vagrant virtual environment requires a box to build off of.
   # If this value is a shorthand to a box in Vagrant Cloud then
   # config.vm.box_url doesn't need to be specified.
   config.vm.box = 'chef/ubuntu-14.04'
@@ -40,23 +35,22 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # network interface) by any external networks.
   config.vm.network :private_network, type: 'dhcp'
 
-  # Create a forwarded port mapping which allows access to a specific port
-  # within the machine from a port on the host machine. In the example below,
-  # accessing "localhost:8080" will access port 80 on the guest machine.
-
   config.berkshelf.enabled = true
 
   config.vm.provision :chef_solo do |chef|
+    chef.run_list = ['recipe[rackspace_monitoring]']
     chef.json = {
-      mysql: {
-        server_root_password: 'rootpass',
-        server_debian_password: 'debpass',
-        server_repl_password: 'replpass'
+      monitoring: {
+        agent: {
+          token: '0000000000000000000000000000000000000000000000000000000000000000.000000'
+        }
+      },
+      rackspace: {
+        cloud_credentials: {
+          username: 'ChangeMe',
+          api_key: '00000000000000000000000000000000'
+        }
       }
     }
-
-    chef.run_list = [
-      'recipe[rackspace_monitoring::default]'
-    ]
   end
 end

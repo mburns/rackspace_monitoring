@@ -7,11 +7,27 @@ provisioner:
 
 platforms:
   - name: ubuntu-14.04
+    run_list:
+    - recipe[apt]
+  - name: ubuntu-12.04
+    run_list:
+    - recipe[apt]
+  - name: centos-7
+    run_list:
+    - recipe[yum]
+  - name: centos-6.5
+    run_list:
+    - recipe[yum]
 
 suites:
   - name: default
+    driver:
+      vm_hostname: ubuntu-14
+      network:
+      - ['private_network', {ip: '192.168.0.10'}]
     run_list:
-      - recipe[rackspace_monitoring]
+      - recipe[rackspace_monitoring::default]
+    excluse: ['ubuntu-12.04', 'centos-7.0', 'centos-6.5']
     attributes:
       monitoring:
         enabled: true

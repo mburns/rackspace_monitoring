@@ -6,7 +6,7 @@ description 'Installs/Configures rackspace monitoring'
 long_description 'Installs/Configures rackspace monitoring'
 version '0.1.0'
 
-%w(ubuntu debian redhat centos).each do |os|
+%w(ubuntu debian redhat centos amazon oracle).each do |os|
   supports os
 end
 

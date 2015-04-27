@@ -4,6 +4,7 @@ group :lint do
   gem 'foodcritic'
   gem 'foodcritic-rackspace-rules'
   gem 'rubocop'
+  gem 'rspec'
 end
 
 group :unit do
