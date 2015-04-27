@@ -30,7 +30,7 @@ remote_directory '/usr/lib/rackspace-monitoring-agent/plugins' do
   owner 'root'
   group 'root'
   mode '00755'
-  files_mode '00755'
+  files_mode '0755'
 end
 
 # dynamically add more agent plugins via attributes

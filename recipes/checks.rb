@@ -2,7 +2,7 @@
 # Cookbook Name:: rackspace_monitoring
 # Recipe:: checks
 #
-# Copyright 2014. Rackspace, US Inc.
+# Copyright 2015. Rackspace, US Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the 'License');
 # you may not use this file except in compliance with the License.
@@ -25,16 +25,16 @@ end
 
 # basic system monitors
 monitors = [
-  'cpu',
-  'loadavg',
-  'memory'
-].each do |monitor|
+  'agent.cpu',
+  'agent.load',
+  'agent.memory'
+].each do |type|
+  monitor = type.partition('.')[2]
   rackspace_monitoring_check monitor do
-    type "agent.#{monitor}"
+    type type
     action :create
     details(
       :consecutive_count => 2,
-      :target => values,
       :cookbook => node['monitoring'][monitor]['cookbook']
     )
     only_if { node['monitoring'][monitor]['disabled'] == false }
@@ -100,14 +100,15 @@ unless node['monitoring']['service']['name'].empty?
 end
 
 # Network
-node['network']['interfaces'].each do |int|
-  next if %w(lo0 lo loopback0).include(int)
+node['network']['interfaces'].each_pair do |int, values|
+  next if %w(lo0 lo loopback0).include?(int)
 
   rackspace_monitoring_check "Network - #{int}" do
     type "agent.network"
     action :create
     details(
-      :target => int
+      :target => int,
+      :options => values
     )
     only_if { node['monitoring']['filesystem']['disabled'] == false }
   end
