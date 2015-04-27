@@ -30,7 +30,7 @@ when 'debian'
     uri "https://stable.packages.cloudmonitoring.rackspace.com/#{node['platform']}-#{node['lsb']['release']}-x86_64"
     distribution 'cloudmonitoring'
     components ['main']
-    key "signing-key.asc"
+    key 'signing-key.asc'
   end
 when 'rhel'
   yum_repository 'monitoring' do

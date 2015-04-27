@@ -1,10 +1,10 @@
-name             'rackspace_monitoring'
-maintainer       'Rackspace Monitoring'
+name 'rackspace_monitoring'
+maintainer 'Rackspace Monitoring'
 maintainer_email 'ele-dev@lists.rackspace.com'
-license          'Apache 2.0'
-description      'Installs/Configures rackspace monitoring'
+license 'Apache 2.0'
+description 'Installs/Configures rackspace monitoring'
 long_description 'Installs/Configures rackspace monitoring'
-version          '0.1.0'
+version '0.1.0'
 
 %w(ubuntu debian redhat centos).each do |os|
   supports os

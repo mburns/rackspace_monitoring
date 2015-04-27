@@ -25,7 +25,7 @@ default['monitoring']['filesystem']['timeout']   = 30
 default['monitoring']['filesystem']['crit']      = 90
 default['monitoring']['filesystem']['warn']      = 80
 default['monitoring']['filesystem']['cookbook']  = 'rackspace_monitoring'
-default['monitoring']['filesystem']['non_monitored_fstypes'] = %(tmpfs devtmpfs devpts proc mqueue cgroup efivars sysfs sys securityfs configfs fusectl)
+default['monitoring']['filesystem']['non_monitored_fstypes'] = %w(tmpfs devtmpfs devpts proc mqueue cgroup efivars sysfs sys securityfs configfs fusectl)
 
 # during chefspec tests with fauxhai, node['filesystem'] might be nil
 unless node['filesystem'].nil?

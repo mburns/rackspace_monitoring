@@ -17,14 +17,14 @@
 # limitations under the License.
 #
 
-service "rackspace-monitoring-agent" do
+service 'rackspace-monitoring-agent' do
   supports value_for_platform(
-    "ubuntu" => { "default" => [:start, :stop, :restart, :status] },
-    "default" => { "default" => [:start, :stop] }
+    'ubuntu' => { 'default' => [:start, :stop, :restart, :status] },
+    'default' => { 'default' => [:start, :stop] }
   )
 
   case node[:platform]
-    when "ubuntu"
+  when 'ubuntu'
     if node[:platform_version].to_f >= 9.10
       provider Chef::Provider::Service::Upstart
     end

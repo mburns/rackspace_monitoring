@@ -24,7 +24,7 @@ directory '/etc/rackspace-monitoring-agent.conf.d' do
 end
 
 # basic system monitors
-monitors = [
+[
   'agent.cpu',
   'agent.load',
   'agent.memory'
@@ -34,8 +34,8 @@ monitors = [
     type type
     action :create
     details(
-      :consecutive_count => 2,
-      :cookbook => node['monitoring'][monitor]['cookbook']
+      consecutive_count: 2,
+      cookbook: node['monitoring'][monitor]['cookbook']
     )
     only_if { node['monitoring'][monitor]['disabled'] == false }
   end
@@ -47,7 +47,7 @@ node['monitoring']['custom_monitors']['name'].each do |monitor|
   monitor_variables = node['monitoring']['custom_monitors'][monitor]['variables']
 
   rackspace_monitoring_check monitor do
-    type monitoring_source
+    type monitor_source
     action :create
     details(monitor_variables)
     only_if { node['monitoring'][monitor]['disabled'] == false }
@@ -104,24 +104,24 @@ node['network']['interfaces'].each_pair do |int, values|
   next if %w(lo0 lo loopback0).include?(int)
 
   rackspace_monitoring_check "Network - #{int}" do
-    type "agent.network"
+    type 'agent.network'
     action :create
     details(
-      :target => int,
-      :options => values
+      target: int,
+      options: values
     )
     only_if { node['monitoring']['filesystem']['disabled'] == false }
   end
 end
 
 # Filesystem
-node['monitoring']['filesystem']['target'].each do |_disk, mount|
+node['monitoring']['filesystem']['target'].each do |disk, mount|
   rackspace_monitoring_check "Filesystem - #{mount}" do
-    type "agent.filesystem"
+    type 'agent.filesystem'
     action :create
     details(
-      :disk => _disk,
-      :target => mount
+      disk: disk,
+      target: mount
     )
     only_if { node['monitoring']['filesystem']['disabled'] == false }
   end
