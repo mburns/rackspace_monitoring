@@ -17,20 +17,6 @@
 # limitations under the License.
 #
 
-agent_token = node['monitoring']['agent']['token']
-
-if agent_token.nil?
-  fail 'agent_token variable must be defined, either on the node or in data bags'
-end
-
-template '/etc/rackspace-monitoring-agent.cfg' do
-  owner 'root'
-  group 'root'
-  mode '00600'
-  variables(
-    monitoring_id: node['monitoring']['agent']['id'],
-    monitoring_token: agent_token,
-    monitoring_upgrade: node['monitoring']['agent']['upgrade']
-  )
-  notifies :restart, 'service[rackspace-monitoring-agent]', :delayed
+rackspace_monitoring_agent node['monitoring']['agent']['id'] do
+  token node['monitoring']['agent']['token']
 end

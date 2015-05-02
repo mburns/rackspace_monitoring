@@ -1,8 +1,8 @@
-<% if @monitoring_id != nil %>
-monitoring_id <%= @monitoring_id %>
-<% end %>
-monitoring_token <%= @monitoring_token %>
+<% if @id != nil -%>
+monitoring_id <%= @id %>
+<% end -%>
+monitoring_token <%= @token %>
 monitoring_upgrade false
-<% if not node['monitoring']['endpoints'].empty? %>
-monitoring_endpoints <%= node['monitoring']['endpoints'].join(",") %>
-<% end %>
+<% if @endpoints.empty? -%>
+monitoring_endpoints <%= @endpoints.join(",") %>
+<% end -%>
