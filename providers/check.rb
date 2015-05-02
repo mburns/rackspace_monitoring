@@ -59,7 +59,7 @@ action :create do
     end
   end
 
-  Chef::Log.info("Craeting check #{name} of #{type}.")
+  Chef::Log.debug("Creating check #{name} of #{type}.")
 
   template "#{confd}/#{name}.yaml" do
     source "confd/#{type}.yaml.erb"
