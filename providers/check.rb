@@ -1,5 +1,36 @@
 confd = '/etc/rackspace-monitoring-agent.conf.d'
 
+def get_name_from_type(type, target) do
+  # Given a type (agent.plugin.foo_bar), return a file name to use
+  case type
+  when 'agent.network'
+    name = "network.#{target}"
+  when 'agent.redis'
+    host = 'localhost'
+    port = 6379
+    name = "redis.#{host}.#{port}"
+  when 'agent.plugin.dir_stats'
+    name = "directory-#{label.gsub(' ', '').gsub('/', '').downcase}.yaml"
+  when 'agent.plugin.haproxy'
+    name = "haproxy-#{label.gsub(' ', '').gsub('/', '').downcase}"
+  when 'agent.plugin.check-mtime'
+    name = "check-mtime-#{label.gsub(' ', '').gsub('/', '').downcase}"
+  when 'agent.plugin.curl'
+    name = "plugin.curl.#{label.gsub(' ', '').gsub('/', '').downcase}"
+  when 'remote.http'
+    name = "http-#{label.gsub(' ', '').gsub('/', '').downcase}"
+  when 'remote.ping'
+    name = "ping-#{label.gsub(' ', '').gsub('/', '').downcase}"
+  else
+    name = type
+
+    unless %w(agent plugin remote).include?(type.split(/[.\s]/)[0])
+      fail "Invalid type, expecting '{agent,plugin,remote}.foo(.bar)' got '#{type}'."
+    end
+  end
+
+  return name
+end
 action :create do
   directory confd do
     owner 'root'
@@ -34,30 +65,7 @@ action :create do
     fail 'monitoring_zones must be defined for remote checks. Example: [mzdfw, mzord, mziad]'
   end
 
-  case type
-  when 'agent.network'
-    name = "network.#{details[:target]}"
-  when 'agent.redis'
-    name = "redis.#{host}.#{port}"
-  when 'agent.plugin.dir_stats'
-    name = "directory-#{label.gsub(' ', '').gsub('/', '').downcase}.yaml"
-  when 'agent.plugin.haproxy'
-    name = "haproxy-#{label.gsub(' ', '').gsub('/', '').downcase}"
-  when 'agent.plugin.check-mtime'
-    name = "check-mtime-#{label.gsub(' ', '').gsub('/', '').downcase}"
-  when 'agent.plugin.curl'
-    name = "plugin.curl.#{label.gsub(' ', '').gsub('/', '').downcase}"
-  when 'remote.http'
-    name = "http-#{label.gsub(' ', '').gsub('/', '').downcase}"
-  when 'remote.ping'
-    name = "ping-#{label.gsub(' ', '').gsub('/', '').downcase}"
-  else
-    name = type
-
-    unless %w(agent plugin remote).include?(type.split(/[.\s]/)[0])
-      fail "Invalid type, expecting '{agent,plugin,remote}.foo(.bar)' got '#{type}'."
-    end
-  end
+  name = get_name_from_type(type, details[:target])
 
   Chef::Log.info("Craeting check #{name} of #{type}.")
 
@@ -88,5 +96,14 @@ action :create do
       max_size_mb_crit: details[:max_size_mb_crit] || nil
     )
     notifies :restart, resources(service: 'rackspace-monitoring-agent'), :delayed
+  end
+end
+
+action :delete do
+  type = new_resource.type
+  name = get_name_from_type(type, details[:target])
+  
+  file "#{confd}/#{name}.yaml" do
+    action :delete
   end
 end
