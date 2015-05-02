@@ -19,22 +19,15 @@
 
 case node['platform_family']
 when 'debian'
-  cookbook_file "#{Chef::Config[:file_cache_path]}/signing-key.asc" do
-    source 'signing-key.asc'
-    mode '00744'
-    owner 'root'
-    group 'root'
-  end
-
-  apt_repository 'monitoring' do
+  apt_repository 'rackspace_monitoring' do
     uri "https://stable.packages.cloudmonitoring.rackspace.com/#{node['platform']}-#{node['lsb']['release']}-x86_64"
     distribution 'cloudmonitoring'
     components ['main']
-    key 'signing-key.asc'
+    key "https://monitoring.api.rackspacecloud.com/pki/agent/#{node['platform']}-#{node['platform_version'][0]}.asc"
   end
-when 'rhel'
-  yum_repository 'monitoring' do
-    description 'Rackspace Cloud Monitoring agent repo'
+when 'rhel', 'centos', 'amazon', 'oracle', 'fedora'
+  yum_repository 'rackspace_monitoring' do
+    description 'Rackspace Monitoring Agent package repository'
     baseurl "https://stable.packages.cloudmonitoring.rackspace.com/#{node['platform']}-#{node['platform_version'][0]}-x86_64"
     gpgkey "https://monitoring.api.rackspacecloud.com/pki/agent/#{node['platform']}-#{node['platform_version'][0]}.asc"
     enabled true
@@ -53,15 +46,13 @@ if node['monitoring']['enabled']
     notifies :restart, 'service[rackspace-monitoring-agent]'
   end
 
-  if node.key?('cloud')
-    execute 'agent-setup-cloud' do
-      command <<-EOH
-        rackspace-monitoring-agent --setup \
-          --username #{node['rackspace']['cloud_credentials']['username']} \
-          --apikey #{node['rackspace']['cloud_credentials']['api_key']}
-        EOH
-      # the filesize is zero if the agent has not been configured
-      only_if { File.size?('/etc/rackspace-monitoring-agent.cfg').nil? }
-    end
+  execute 'agent-setup-cloud' do
+    command <<-EOH
+      rackspace-monitoring-agent --setup \
+        --username #{node['rackspace']['cloud_credentials']['username']} \
+        --apikey #{node['rackspace']['cloud_credentials']['api_key']}
+      EOH
+    # the filesize is zero if the agent has not been configured
+    only_if { File.size?('/etc/rackspace-monitoring-agent.cfg').nil? }
   end
 end
