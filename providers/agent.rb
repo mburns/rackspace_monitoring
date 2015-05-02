@@ -24,7 +24,7 @@ action :create do
   endpoints = new_resource.endpoints
   proxy_url = new_resource.proxy_url
   query_endpoints = new_resource.query_endpoints
-  
+
   fail 'agent token must be defined, either on the node or in data bags' if token.nil?
 
   unless node['monitoring']['enabled']
@@ -72,6 +72,7 @@ action :create do
   end
 
   template '/etc/rackspace-monitoring-agent.cfg' do
+    cookbook 'rackspace_monitoring'
     owner 'root'
     group 'root'
     mode '00600'
@@ -117,7 +118,7 @@ action :delete do
       action :remove
     end
   end
-  
+
   package 'rackspace-monitoring-agent' do
     action :remove
   end
