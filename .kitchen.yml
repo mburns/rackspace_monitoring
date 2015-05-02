@@ -12,9 +12,6 @@ platforms:
   - name: ubuntu-12.04
     run_list:
     - recipe[apt]
-  - name: centos-7
-    run_list:
-    - recipe[yum]
   - name: centos-6.5
     run_list:
     - recipe[yum]
@@ -27,7 +24,7 @@ suites:
       - ['private_network', {ip: '192.168.0.10'}]
     run_list:
       - recipe[rackspace_monitoring::default]
-    excluse: ['ubuntu-12.04', 'centos-7.0', 'centos-6.5']
+    excluse: ['ubuntu-12.04', 'centos-6.5']
     attributes:
       monitoring:
         enabled: true
