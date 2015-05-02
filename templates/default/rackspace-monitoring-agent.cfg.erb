@@ -3,3 +3,6 @@ monitoring_id <%= @monitoring_id %>
 <% end %>
 monitoring_token <%= @monitoring_token %>
 monitoring_upgrade false
+<% if not node['monitoring']['endpoints'].empty? %>
+monitoring_endpoints <%= node['monitoring']['endpoints'].join(",") %>
+<% end %>
