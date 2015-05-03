@@ -63,19 +63,17 @@ action :create do
     owner 'root'
     group 'root'
     mode '00644'
-    variables({
-      :cookbook_name => cookbook_name,
-      :plugin_check_label => info['label'] || name,
-      :plugin_check_disabled => info['disabled'] || false,
-      :plugin_check_period => info['period'] || 60,
-      :plugin_check_timeout => info['timeout'] || 30,
-      :plugin_details_file => "#{node['monitoring']['plugind']}/#{info['details']['file']}",
-      :plugin_details_args => info['details']['args'],
-      :plugin_details_timeout => info['details']['timeout'] || 60,
-      :plugin_alarm_label => info['alarm']['label'],
-      :plugin_alarm_notification_plan_id => info['alarm']['notification_plan_id'],
-      :plugin_alarm_criteria => info['alarm']['criteria']
-    })
+    variables(cookbook_name: cookbook_name,
+              plugin_check_label: info['label'] || name,
+              plugin_check_disabled: info['disabled'] || false,
+              plugin_check_period: info['period'] || 60,
+              plugin_check_timeout: info['timeout'] || 30,
+              plugin_details_file: info['details']['file'],
+              plugin_details_args: info['details']['args'],
+              plugin_details_timeout: info['details']['timeout'] || 60,
+              plugin_alarm_label: info['alarm']['label'],
+              plugin_alarm_notification_plan_id: info['alarm']['notification_plan_id'],
+              plugin_alarm_criteria: info['alarm']['criteria'])
     # notifies 'restart', 'service[rackspace-monitoring-agent]', :delayed
     only_if { info['disabled'] == false }
   end

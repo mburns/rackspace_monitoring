@@ -17,16 +17,16 @@
 # limitations under the License.
 #
 
-directory '/etc/rackspace-monitoring-agent.conf.d'
+directory node['monitoring']['confd']
 
-# default set of plugins
-directory '/usr/lib/rackspace-monitoring-agent/plugins' do
+directory node['monitoring']['plugind'] do
   owner 'root'
   group 'root'
   mode '00755'
   recursive true
 end
-remote_directory '/usr/lib/rackspace-monitoring-agent/plugins' do
+
+remote_directory node['monitoring']['plugind'] do
   source 'plugins'
   cookbook 'rackspace_monitoring'
   owner 'root'
@@ -38,7 +38,7 @@ end
 # dynamically add more agent plugins via attributes
 unless node['monitoring']['plugins'].empty?
   node['monitoring']['plugins'].each do |plugin_name, value|
-    rackspace_monitoring_plugin value['label'] || plugin_name do
+    rackspace_monitoring_plugin plugin_name do
       file value['details']['file']
       source value['file_url']
       cookbook value['cookbook']

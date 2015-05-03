@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-directory '/etc/rackspace-monitoring-agent.conf.d' do
+directory node['monitoring']['confd'] do
   owner 'root'
   group 'root'
   mode '00755'
@@ -48,7 +48,6 @@ node['monitoring']['custom_monitors']['name'].each do |monitor|
 
   rackspace_monitoring_check monitor do
     type monitor_source
-    action :create
     details(monitor_variables)
     only_if { node['monitoring'][monitor]['disabled'] == false }
   end
@@ -61,30 +60,20 @@ node['monitoring']['remote_http']['name'].each do |monitor|
 
   rackspace_monitoring_check monitor do
     type monitor_source || 'remote.http'
-    action :create
     details(monitor_variables)
     only_if { node['monitoring'][monitor]['disabled'] == false }
   end
 end
 
-# service
+# service monitoring
 unless node['monitoring']['service']['name'].empty?
-  directory '/usr/lib/rackspace-monitoring-agent/plugins' do
-    recursive true
-    owner 'root'
-    group 'root'
-    mode '00755'
-  end
 
-  template '/usr/lib/rackspace-monitoring-agent/plugins/service_mon.sh' do
-    cookbook node['monitoring']['service_mon']['cookbook']
+  rackspace_monitoring_plugin 'service_mon.sh' do
     source 'service_mon.sh.erb'
-    owner 'root'
-    group 'root'
-    mode '00755'
-    variables({
-      :cookbook_name => cookbook_name
-    })
+    cookbook node['monitoring']['service_mon']['cookbook']
+    details(
+      cookbook_name: cookbook_name
+    )
   end
 
   node['monitoring']['service']['name'].each do |service_name|

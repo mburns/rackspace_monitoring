@@ -16,7 +16,7 @@ rackspace_monitoring_check 'memory' do
   )
 end
 
-rackspace_monitoring_check "Network - eth0" do
+rackspace_monitoring_check 'Network - eth0' do
   type 'agent.network'
   action :create
   details(
