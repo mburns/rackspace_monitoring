@@ -20,3 +20,5 @@
 rackspace_monitoring_agent node['monitoring']['agent']['id'] do
   token node['monitoring']['agent']['token']
 end
+
+include_recipe 'rackspace_monitoring::plugins'

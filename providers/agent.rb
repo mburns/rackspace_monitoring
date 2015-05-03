@@ -45,10 +45,8 @@ action :create do
   token = new_resource.token || node['monitoring']['agent']['token']
   id = new_resource.id || node['monitoring']['agent']['id'] || node['fqdn']
 
-  snet_region = new_resource.snet_region
-  endpoints = new_resource.endpoints
+  endpoints = new_resource.endpoints || []
   proxy_url = new_resource.proxy_url
-  query_endpoints = new_resource.query_endpoints
 
   fail 'agent token must be defined, either on the node or in data bags' if token.nil?
 
@@ -69,6 +67,10 @@ action :create do
     notifies :restart, 'service[rackspace-monitoring-agent]'
   end
 
+  unless endpoints.is_a?(Array)
+    endpoints = endpoints.split!(',') # cast to array split on commas
+  end
+
   template '/etc/rackspace-monitoring-agent.cfg' do
     cookbook 'rackspace_monitoring'
     owner 'root'
@@ -78,9 +80,7 @@ action :create do
       id: id,
       token: token,
       endpoints: endpoints,
-      snet_region: snet_region,
-      proxy_url: proxy_url,
-      query_endpoints: query_endpoints
+      proxy_url: proxy_url
     )
     notifies :restart, 'service[rackspace-monitoring-agent]', :delayed
   end

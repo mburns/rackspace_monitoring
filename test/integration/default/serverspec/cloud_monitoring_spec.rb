@@ -1,5 +1,4 @@
 require 'serverspec'
-include Serverspec::Helper::Exec
 
 describe 'Rackspace Monitoring LWRP' do
   describe file('/etc/rackspace-monitoring-agent.cfg') do
@@ -20,9 +19,10 @@ describe 'Rackspace Monitoring LWRP' do
     it { should be_grouped_into('root') }
   end
 
-  describe service('rackspace-monitoring-agent') do
-    it { should be_installed }
-  end
+  ## check_is_installed is not implemented in Specinfra::Command::Ubuntu::Base::Service
+  # describe service('rackspace-monitoring-agent') do
+  #  it { should be_installed }
+  # end
 
   describe service('rackspace-monitoring-agent') do
     it { should be_enabled }
