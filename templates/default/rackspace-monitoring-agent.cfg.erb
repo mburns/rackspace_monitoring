@@ -1,8 +1,21 @@
-<% if @id != nil -%>
+monitoring_token <%= @token %>
+
+<% unless @id.nil? -%>
 monitoring_id <%= @id %>
 <% end -%>
-monitoring_token <%= @token %>
-monitoring_upgrade false
-<% if @endpoints.empty? -%>
+
+<% unless @monitoring_snet_region.nil? -%>
+monitoring_snet_region <%= @@monitoring_snet_region %>
+<% end -%>
+
+<% unless @endpoints.empty? -%>
 monitoring_endpoints <%= @endpoints.join(",") %>
+<% end -%>
+
+<% unless @proxy_url.nil? -%>
+monitoring_proxy_url <%= @proxy_url %>
+<% end -%>
+
+<% unless @query_endpoints.empty? -%>
+monitoring_query_endpoints <%= @query_endpoints.join(",") %>
 <% end -%>

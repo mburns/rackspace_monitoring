@@ -46,6 +46,7 @@ action :create do
   id = new_resource.id || node['monitoring']['agent']['id'] || node['fqdn']
 
   endpoints = new_resource.endpoints || []
+  query_endpoints = new_resource.query_endpoints || []
   proxy_url = new_resource.proxy_url
 
   fail 'agent token must be defined, either on the node or in data bags' if token.nil?
