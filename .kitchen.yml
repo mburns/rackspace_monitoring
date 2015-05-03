@@ -19,9 +19,7 @@ platforms:
 suites:
   - name: default
     driver:
-      vm_hostname: ubuntu-14
-      network:
-      - ['private_network', {ip: '192.168.0.10'}]
+      vm_hostname: rackspace-monitoring-vm
     run_list:
       - recipe[rackspace_monitoring::default]
     exclude: ['ubuntu-12.04', 'centos-6.5']
