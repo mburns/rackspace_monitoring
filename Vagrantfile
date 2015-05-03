@@ -38,7 +38,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.berkshelf.enabled = true
 
   config.vm.provision :chef_solo do |chef|
-    chef.run_list = ['recipe[rackspace_monitoring]']
+    chef.run_list = ['recipe[rackspace_monitoring::agent]']
     chef.json = {
       monitoring: {
         agent: {
