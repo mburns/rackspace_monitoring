@@ -28,10 +28,9 @@ platforms:
 suites:
   - name: default
     driver:
-      vm_hostname: rackspace-monitoring-vm
+      vm_hostname: rackspace-monitoring-vm.example.com
     run_list:
       - recipe[rackspace_monitoring::default]
-      - recipe[rackspace_monitoring::agent]
     exclude: ['ubuntu-12.04', 'centos-6.6']
     attributes:
       monitoring:

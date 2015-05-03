@@ -64,7 +64,7 @@ action :create do
   label = new_resource.label
   details = new_resource.details || {}
   notification_plan_id = details[:notification_plan_id] || node['monitoring']['notification_plan_id']
-  consecutive_count = details[:consecutive_count]
+  consecutive_count = details[:consecutive_count] || 2
   target_alias = new_resource.target_alias
   target_hostname = new_resource.target_hostname
   target_resolver = new_resource.target_resolver
