@@ -17,56 +17,32 @@
 # limitations under the License.
 #
 
+directory '/etc/rackspace-monitoring-agent.conf.d'
+
+# default set of plugins
 directory '/usr/lib/rackspace-monitoring-agent/plugins' do
   owner 'root'
   group 'root'
   mode '00755'
   recursive true
 end
-
-# default set of plugins
 remote_directory '/usr/lib/rackspace-monitoring-agent/plugins' do
   source 'plugins'
+  cookbook 'rackspace_monitoring'
   owner 'root'
   group 'root'
   mode '00755'
-  files_mode '0755'
+  files_mode '755'
 end
 
 # dynamically add more agent plugins via attributes
 unless node['monitoring']['plugins'].empty?
   node['monitoring']['plugins'].each do |plugin_name, value|
-    # helper variable
-    plugin_hash = value
-
-    remote_file "/usr/lib/rackspace-monitoring-agent/plugins/#{plugin_hash['details']['file']}" do
-      source plugin_hash['file_url']
-      owner 'root'
-      group 'root'
-      mode '0755'
-    end
-
-    template "/etc/rackspace-monitoring-agent.conf.d/monitoring-plugin-#{plugin_name}.yaml" do
-      cookbook plugin_hash['cookbook']
-      source 'monitoring-plugin.erb'
-      owner 'root'
-      group 'root'
-      mode '00644'
-      variables(
-        cookbook_name: cookbook_name,
-        plugin_check_label: plugin_hash['label'],
-        plugin_check_disabled: plugin_hash['disabled'],
-        plugin_check_period: plugin_hash['period'],
-        plugin_check_timeout: plugin_hash['timeout'],
-        plugin_details_file: plugin_hash['details']['file'],
-        plugin_details_args: plugin_hash['details']['args'],
-        plugin_details_timeout: plugin_hash['details']['timeout'],
-        plugin_alarm_label: plugin_hash['alarm']['label'],
-        plugin_alarm_notification_plan_id: plugin_hash['alarm']['notification_plan_id'],
-        plugin_alarm_criteria: plugin_hash['alarm']['criteria']
-      )
-      notifies 'restart', 'service[rackspace-monitoring-agent]', :delayed
-      only_if { plugin_hash['disabled'] == false }
+    rackspace_monitoring_plugin value['label'] || plugin_name do
+      file value['details']['file']
+      source value['file_url']
+      cookbook value['cookbook']
+      info value
     end
   end
 end

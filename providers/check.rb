@@ -18,13 +18,19 @@
 
 confd = '/etc/rackspace-monitoring-agent.conf.d'
 
-def get_name_from_type(type, target) do
-  # Given a type (agent.plugin.foo_bar), return a file name to use
+def get_name_from_type(type, label, target)
+  # Given a type ("agent.network") and a target ("eth0"), return a file name.
+  # This includes normalizing or stripping invalid character
+
+  unless %w(agent plugin remote).include?(type.split(/[.\s]/)[0])
+    fail "Invalid type, expecting '{agent,plugin,remote}.foo(.bar)', got '#{type}'."
+  end
+
   case type
   when 'agent.network'
     name = "network.#{target}"
   when 'agent.redis'
-    host = 'localhost'
+    host = 'localhost' # TODO : fixme
     port = 6379
     name = "redis.#{host}.#{port}"
   when 'agent.plugin.dir_stats'
@@ -41,21 +47,17 @@ def get_name_from_type(type, target) do
     name = "ping-#{label.gsub(' ', '').gsub('/', '').downcase}"
   else
     name = type
-
-    unless %w(agent plugin remote).include?(type.split(/[.\s]/)[0])
-      fail "Invalid type, expecting '{agent,plugin,remote}.foo(.bar)' got '#{type}'."
-    end
   end
 
-  return name
+  name
 end
+
 action :create do
   directory confd do
     owner 'root'
     group 'root'
     mode '00755'
     recursive true
-    action :create
   end
 
   type = new_resource.type
@@ -78,7 +80,7 @@ action :create do
     fail 'monitoring_zones must be defined for remote checks. Example: [mzdfw, mzord, mziad]'
   end
 
-  name = get_name_from_type(type, details[:target])
+  name = get_name_from_type(type, label, details[:target])
 
   Chef::Log.debug("Creating check #{name} of #{type}.")
 
@@ -88,25 +90,25 @@ action :create do
     group 'root'
     mode '00644'
     variables(
-      type: type,
-      label: label,
-      notification_plan_id: notification_plan_id,
       consecutive_count: consecutive_count,
-      target_alias: target_alias,
-      target_hostname: target_hostname,
-      target_resolver: target_resolver,
+      count: details[:count],
+      expected_code: details[:expected_code],
       file_to_check: details[:file_to_check],
       frontend_age_critical_min: details[:frontend_age_critical_min] || 0,
       frontend_age_warning_min: details[:frontend_age_warning_min] || 100,
-      target: details[:target],
-      count: details[:count],
-      url: details[:url],
-      expected_code: details[:expected_code],
-      monitoring_zones: monitoring_zones,
+      label: label,
       max_files_warn: details[:max_files_warn] || nil,
       max_files_crit: details[:max_files_crit] || nil,
       max_size_mb_warn: details[:max_size_mb_warn] || nil,
-      max_size_mb_crit: details[:max_size_mb_crit] || nil
+      max_size_mb_crit: details[:max_size_mb_crit] || nil,
+      monitoring_zones: monitoring_zones,
+      notification_plan_id: notification_plan_id,
+      target: details[:target],
+      target_alias: target_alias,
+      target_hostname: target_hostname,
+      target_resolver: target_resolver,
+      type: type,
+      url: details[:url]
     )
     notifies :restart, resources(service: 'rackspace-monitoring-agent'), :delayed
   end
@@ -115,8 +117,11 @@ end
 action :delete do
   type = new_resource.type
   name = get_name_from_type(type, details[:target])
-  
+
   file "#{confd}/#{name}.yaml" do
     action :delete
   end
 end
+
+alias_method :action_add, :action_create
+alias_method :action_remove, :action_delete

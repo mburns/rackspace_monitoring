@@ -9,28 +9,36 @@ platforms:
   - name: ubuntu-14.04
     run_list:
     - recipe[apt]
+    driver_config:
+      box: opscode-ubuntu-14.04
+      require_chef_omnibus: 11.8.2
   - name: ubuntu-12.04
     run_list:
     - recipe[apt]
-  - name: centos-6.5
+    driver_config:
+      box: opscode-ubuntu-12.04
+      require_chef_omnibus: 11.8.2
+  - name: centos-6.6
     run_list:
     - recipe[yum]
+    driver_config:
+      box: opscode-centos-6.6
+      require_chef_omnibus: 11.8.2
 
 suites:
   - name: default
     driver:
-      vm_hostname: ubuntu-14
-      network:
-      - ['private_network', {ip: '192.168.0.10'}]
+      vm_hostname: rackspace-monitoring-vm
     run_list:
       - recipe[rackspace_monitoring::default]
-    excluse: ['ubuntu-12.04', 'centos-6.5']
+      - recipe[rackspace_monitoring::agent]
+    exclude: ['ubuntu-12.04', 'centos-6.6']
     attributes:
       monitoring:
         enabled: true
         agent:
-          token: 0000000000000000000000000000000000000000000000000000000000000000.000000
+          token: '0000000000000000000000000000000000000000000000000000000000000000.000000'
       rackspace:
         cloud_credentials:
-          username: ChangeMe
-          api_key: 00000000000000000000000000000000
+          username: 'ChangeMe'
+          api_key: '00000000000000000000000000000000'

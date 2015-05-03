@@ -16,14 +16,37 @@
 # limitations under the License.
 #
 
+def monitoring_repository(action)
+  # call with :add or :remote, defaults to :add
+  action ||= 'add'.to_sym
+
+  case node['platform_family']
+  when 'debian'
+    apt_repository 'rackspace_monitoring' do
+      uri "https://stable.packages.cloudmonitoring.rackspace.com/#{node['platform']}-#{node['lsb']['release']}-x86_64"
+      distribution 'cloudmonitoring'
+      components ['main']
+      key "https://monitoring.api.rackspacecloud.com/pki/agent/#{node['platform']}-#{node['platform_version'][0]}.asc"
+      action action
+    end
+  when 'rhel'
+    yum_repository 'rackspace_monitoring' do
+      description 'Rackspace Monitoring Agent package repository'
+      baseurl "https://stable.packages.cloudmonitoring.rackspace.com/#{node['platform']}-#{node['platform_version'][0]}-x86_64"
+      gpgkey "https://monitoring.api.rackspacecloud.com/pki/agent/#{node['platform']}-#{node['platform_version'][0]}.asc"
+      enabled true
+      gpgcheck true
+      action action
+    end
+  end
+end
+
 action :create do
   token = new_resource.token || node['monitoring']['agent']['token']
   id = new_resource.id || node['monitoring']['agent']['id'] || node['fqdn']
 
-  snet_region = new_resource.snet_region
-  endpoints = new_resource.endpoints
+  endpoints = new_resource.endpoints || []
   proxy_url = new_resource.proxy_url
-  query_endpoints = new_resource.query_endpoints
 
   fail 'agent token must be defined, either on the node or in data bags' if token.nil?
 
@@ -32,24 +55,7 @@ action :create do
     next
   end
 
-  # add package repository
-  case node['platform_family']
-  when 'debian', 'ubuntu'
-    apt_repository 'rackspace_monitoring' do
-      uri "https://stable.packages.cloudmonitoring.rackspace.com/#{node['platform']}-#{node['lsb']['release']}-x86_64"
-      distribution 'cloudmonitoring'
-      components ['main']
-      key "https://monitoring.api.rackspacecloud.com/pki/agent/#{node['platform']}-#{node['platform_version'][0]}.asc"
-    end
-  when 'rhel', 'centos', 'amazon', 'oracle', 'fedora'
-    yum_repository 'rackspace_monitoring' do
-      description 'Rackspace Monitoring Agent package repository'
-      baseurl "https://stable.packages.cloudmonitoring.rackspace.com/#{node['platform']}-#{node['platform_version'][0]}-x86_64"
-      gpgkey "https://monitoring.api.rackspacecloud.com/pki/agent/#{node['platform']}-#{node['platform_version'][0]}.asc"
-      enabled true
-      gpgcheck true
-    end
-  end
+  monitoring_repository(:add)
 
   package 'rackspace-monitoring-agent' do
     if node['monitoring']['agent']['version'] == 'latest'
@@ -61,14 +67,8 @@ action :create do
     notifies :restart, 'service[rackspace-monitoring-agent]'
   end
 
-  execute 'agent-setup-cloud' do
-    command <<-EOH
-      rackspace-monitoring-agent --setup \
-        --username #{node['rackspace']['cloud_credentials']['username']} \
-        --apikey #{node['rackspace']['cloud_credentials']['api_key']}
-      EOH
-    # the filesize is zero if the agent has not been configured
-    only_if { File.size?('/etc/rackspace-monitoring-agent.cfg').nil? }
+  unless endpoints.is_a?(Array)
+    endpoints = endpoints.split!(',') # cast to array split on commas
   end
 
   template '/etc/rackspace-monitoring-agent.cfg' do
@@ -79,45 +79,35 @@ action :create do
     variables(
       id: id,
       token: token,
-      endpoints: endpoints
+      endpoints: endpoints,
+      proxy_url: proxy_url
     )
     notifies :restart, 'service[rackspace-monitoring-agent]', :delayed
   end
 
   service 'rackspace-monitoring-agent' do
-    supports value_for_platform(
-      "ubuntu" => { "default" => [:start, :stop, :restart, :status] },
-      "default" => { "default" => [:start, :stop] }
-    )
+    supports start: true, status: true, stop: true, restart: true
     case node[:platform]
-      when "ubuntu"
+    when 'ubuntu'
       if node[:platform_version].to_f >= 9.10 && node[:platform_version].to_f <= 14.10
         provider Chef::Provider::Service::Upstart
       end
     end
-    action [:start, :enable]
+    action %w(enable start)
     only_if { node['monitoring']['enabled'] == true }
   end
 end
 
 action :delete do
   service 'rackspace-monitoring-agent' do
-    action [:stop, :disable]
+    action %w(disable stop)
   end
 
   file '/etc/rackspace-monitoring-agent.cfg' do
     action :delete
   end
 
-  when 'debian', 'ubuntu'
-    apt_repository 'rackspace_monitoring' do
-      action :remove
-    end
-  when 'rhel', 'centos', 'amazon', 'oracle', 'fedora'
-    yum_repository 'rackspace_monitoring' do
-      action :remove
-    end
-  end
+  monitoring_repository(:remove)
 
   package 'rackspace-monitoring-agent' do
     action :remove
@@ -125,13 +115,18 @@ action :delete do
 end
 
 action :disable do
-  package 'rackspace-monitoring-agent' do
-    action [:disable, :stop]
+  service 'rackspace-monitoring-agent' do
+    action %w(disable stop)
   end
 end
 
 action :enable do
-  package 'rackspace-monitoring-agent' do
-    action [:enable, :start]
+  service 'rackspace-monitoring-agent' do
+    action %w(enable start)
   end
 end
+
+alias_method :action_add, :action_create
+alias_method :action_remove, :action_delete
+alias_method :action_stop, :action_disable
+alias_method :action_start, :action_enable
