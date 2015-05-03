@@ -82,9 +82,9 @@ unless node['monitoring']['service']['name'].empty?
     owner 'root'
     group 'root'
     mode '00755'
-    variables(
-      cookbook_name: cookbook_name
-    )
+    variables({
+      :cookbook_name => cookbook_name
+    })
   end
 
   node['monitoring']['service']['name'].each do |service_name|

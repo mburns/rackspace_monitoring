@@ -71,6 +71,17 @@ action :create do
     endpoints = endpoints.split!(',') # cast to array split on commas
   end
 
+  execute 'agent-setup-cloud' do
+    command <<-EOH
+      rackspace-monitoring-agent --setup \
+        --username #{node['rackspace']['cloud_credentials']['username']} \
+        --apikey #{node['rackspace']['cloud_credentials']['api_key']}
+      EOH
+    # the filesize is zero if the agent has not been configured
+    only_if { File.size?('/etc/rackspace-monitoring-agent.cfg').nil? }
+    only_if { node['monitoring']['enabled'] == true }
+  end
+
   template '/etc/rackspace-monitoring-agent.cfg' do
     cookbook 'rackspace_monitoring'
     owner 'root'

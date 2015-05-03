@@ -16,8 +16,6 @@
 # limitations under the License.
 #
 
-confd = '/etc/rackspace-monitoring-agent.conf.d'
-
 def get_name_from_type(type, label, target)
   # Given a type ("agent.network") and a target ("eth0"), return a file name.
   # This includes normalizing or stripping invalid character
@@ -53,7 +51,7 @@ def get_name_from_type(type, label, target)
 end
 
 action :create do
-  directory confd do
+  directory node['monitoring']['confd'] do
     owner 'root'
     group 'root'
     mode '00755'
@@ -84,7 +82,7 @@ action :create do
 
   Chef::Log.debug("Creating check #{name} of #{type}.")
 
-  template "#{confd}/#{name}.yaml" do
+  template "#{node['monitoring']['confd']}/#{name}.yaml" do
     source "confd/#{type}.yaml.erb"
     owner 'root'
     group 'root'
@@ -118,7 +116,7 @@ action :delete do
   type = new_resource.type
   name = get_name_from_type(type, details[:target])
 
-  file "#{confd}/#{name}.yaml" do
+  file "#{node['monitoring']['confd']}/#{name}.yaml" do
     action :delete
   end
 end

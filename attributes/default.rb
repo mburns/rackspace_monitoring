@@ -9,6 +9,9 @@ end
 default['monitoring']['notification_plan_id'] = 'npTechnicalContactsEmail'
 default['monitoring']['endpoints'] = [] # This should be a list of strings like 'x.x.x.x:port'
 
+default['monitoring']['confd'] = '/etc/rackspace-monitoring-agent.conf.d'
+default['monitoring']['plugind'] = '/usr/lib/rackspace-monitoring-agent/plugins'
+
 # Rackspace Monitoring IP ranges that will send or receive check or agent data
 default['monitoring']['zones'] = [
   {
