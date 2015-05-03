@@ -17,8 +17,7 @@
 # limitations under the License.
 #
 
-include_recipe 'rackspace_monitoring::package'
 include_recipe 'rackspace_monitoring::agent'
+
 include_recipe 'rackspace_monitoring::checks'
 include_recipe 'rackspace_monitoring::plugins'
-include_recipe 'rackspace_monitoring::service'
