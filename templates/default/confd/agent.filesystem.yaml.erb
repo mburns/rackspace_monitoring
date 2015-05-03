@@ -2,15 +2,15 @@
 # Controlling Cookbook: <%= @cookbook_name %>
 #
 
-type: agent.filesystem
-label: Filesystem check on <%= @mount %>
+type    : agent.filesystem
+label   : Filesystem check on <%= @mount %>
 disabled: <%= node['monitoring']['filesystem']['disabled'] %>
-period: <%= node['monitoring']['filesystem']['period'] %>
-timeout: <%= node['monitoring']['filesystem']['timeout'] %>
-details:
+period  : <%= node['monitoring']['filesystem']['period'] %>
+timeout : <%= node['monitoring']['filesystem']['timeout'] %>
+details :
   target: <%= @mount %>
 <% if node['monitoring']['filesystem']['alarm'] == true %>
-alarms:
+alarms  :
     alarm-disk-size:
         label: usage on <%= @mount %>
         notification_plan_id: <%= node['monitoring']['notification_plan_id'] %>

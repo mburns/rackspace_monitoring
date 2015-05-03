@@ -4,11 +4,12 @@
 
 type    : agent.plugin
 label   : <%= @label %>
+disabled: <%= node['monitoring']['network']['disabled'] %>
 period  : <%= @period || 120 %>
 timeout : <%= @timeout || 30 %>
 details :
-    file : ntp_offset.sh
-alarms:
+    file: ntp_offset.sh
+alarms  :
     ntp-offset:
         label: Clock sync
         notification_plan_id: <%= @notification_plan_id %>

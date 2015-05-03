@@ -4,6 +4,7 @@
 
 type    : remote.ping
 label   : <%= @label %>
+disabled: <%= node['monitoring']['network']['disabled'] %>
 period  : <%= @period || 60 %>
 timeout : <%= @timeout || 30 %>
 <% if @target_alias -%>
@@ -21,7 +22,7 @@ monitoring_zones_poll:
 <% end -%>
 details :
     count : <%= @count || 5 %>
-alarms:
+alarms  :
     packet-loss:
         label: Packet loss
         notification_plan_id: <%= @notification_plan_id %>

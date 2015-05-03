@@ -2,13 +2,13 @@
 # Controlling Cookbook: <%= @cookbook_name %>
 #
 
-type: agent.cpu
-label: CPU
+type    : agent.cpu
+label   : CPU
 disabled: <%= node['monitoring']['cpu']['disabled'] %>
-period: <%= node['monitoring']['cpu']['period'] %>
-timeout: <%= node['monitoring']['cpu']['timeout'] %>
+period  : <%= node['monitoring']['cpu']['period'] %>
+timeout : <%= node['monitoring']['cpu']['timeout'] %>
 <% if node['monitoring']['cpu']['alarm'] == true %>
-alarms:
+alarms  :
     alarm-cpu:
         label: CPU Usage
         notification_plan_id: <%= node['monitoring']['notification_plan_id'] %>

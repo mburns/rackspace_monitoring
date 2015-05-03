@@ -4,12 +4,13 @@
 
 type    : agent.plugin
 label   : <%= @label %>
+disabled: <%= node['monitoring']['network']['disabled'] %>
 period  : <%= @period || 60 %>
 timeout : <%= @timeout || 10 %>
 details :
-    file : check-mtime.sh
-    args : [ "<%= @file_to_check %>" ]
-alarms:
+    file: check-mtime.sh
+    args: [ "<%= @file_to_check %>" ]
+alarms  :
     file-mod-age:
         label: File Modification Age
         notification_plan_id: <%= @notification_plan_id %>

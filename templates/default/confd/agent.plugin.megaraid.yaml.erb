@@ -4,12 +4,13 @@
 
 type    : agent.plugin
 label   : <%= @label %>
+disabled: <%= node['monitoring']['network']['disabled'] %>
 period  : <%= @period || 900 %>
 timeout : <%= @timeout || 30 %>
 details :
-    file    : megaraid.sh
+    file: megaraid.sh
     timeout : 30000
-alarms:
+alarms  :
     smart-health:
         label: SMART health
         notification_plan_id: <%= @notification_plan_id %>

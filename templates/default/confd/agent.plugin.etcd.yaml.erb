@@ -6,12 +6,13 @@
 
 type    : agent.plugin
 label   : <%= @label %>
+disabled: <%= node['monitoring']['network']['disabled'] %>
 period  : <%= @period || 60 %>
 timeout : <%= @timeout || 30 %>
 details :
-    file : etcd.py
-    args : [ "--url", "<%= host %>" ]
-alarms:
+    file: etcd.py
+    args: [ "--url", "<%= host %>" ]
+alarms  :
     node-state:
         label: Node state
         notification_plan_id: <%= @notification_plan_id %>

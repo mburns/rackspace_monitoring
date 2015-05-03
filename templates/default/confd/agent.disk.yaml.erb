@@ -2,15 +2,15 @@
 # Controlling Cookbook: <%= @cookbook_name %>
 #
 
-type: agent.disk
-label: Disk check on <%= node['monitoring']['disk']['target'] %>
+type    : agent.disk
+label   : Disk check on <%= node['monitoring']['disk']['target'] %>
 disabled: <%= node['monitoring']['disk']['disabled'] %>
-period: <%= node['monitoring']['disk']['period'] %>
-timeout: <%= node['monitoring']['disk']['timeout'] %>
-details:
+period  : <%= node['monitoring']['disk']['period'] %>
+timeout : <%= node['monitoring']['disk']['timeout'] %>
+details :
   target: <%= node['monitoring']['disk']['target'] %>
 <% if node['monitoring']['disk']['alarm'] == true %>
-alarms:
+alarms  :
     alarm-disk:
         label: usage on <%= node['monitoring']['disk']['target'] %>
         notification_plan_id: <%= node['monitoring']['notification_plan_id'] %>

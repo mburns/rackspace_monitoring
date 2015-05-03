@@ -2,15 +2,15 @@
 # Controlling Cookbook: <%= @cookbook_name %>
 #
 
-type: agent.network
-label: Network check on <%= node['monitoring']['network']['target'] %>
+type    : agent.network
+label   : Network check on <%= node['monitoring']['network']['target'] %>
 disabled: <%= node['monitoring']['network']['disabled'] %>
-period: <%= node['monitoring']['network']['period'] %>
-timeout: <%= node['monitoring']['network']['timeout'] %>
-details:
+period  : <%= node['monitoring']['network']['period'] %>
+timeout : <%= node['monitoring']['network']['timeout'] %>
+details :
   target: <%= node['monitoring']['network']['target'] %>
 <% if node['monitoring']['network']['alarm'] == true %>
-alarms:
+alarms  :
     alarm-network-receive:
         label: Network receive rate on <%= node['monitoring']['network']['target'] %>
         notification_plan_id: <%= node['monitoring']['notification_plan_id'] %>

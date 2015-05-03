@@ -4,6 +4,7 @@
 
 type    : remote.http
 label   : <%= @label %>
+disabled: <%= node['monitoring']['network']['disabled'] %>
 period  : <%= @period || 60 %>
 timeout : <%= @timeout || 10 %>
 <% if @target_alias -%>
@@ -21,7 +22,7 @@ monitoring_zones_poll:
 <% end -%>
 details :
     url : <%= @url %>
-alarms:
+alarms  :
     response-code:
         label: Response code
         notification_plan_id: <%= @notification_plan_id %>

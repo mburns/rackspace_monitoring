@@ -4,12 +4,13 @@
 
 type    : agent.plugin
 label   : <%= @label %>
+disabled: <%= node['monitoring']['network']['disabled'] %>
 period  : <%= @period || 120 %>
 timeout : <%= @timeout || 30 %>
 details :
-    file : elasticsearch.py
-    args : [ "--host=http://<%= node[:fqdn] %>:9200/", "--cluster-health" ]
-alarms:
+    file: elasticsearch.py
+    args: [ "--host=http://<%= node[:fqdn] %>:9200/", "--cluster-health" ]
+alarms  :
     cluster-status:
         label: Cluster health
         notification_plan_id: <%= @notification_plan_id %>
