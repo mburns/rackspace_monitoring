@@ -17,6 +17,3 @@ describe 'rackspace_monitoring::package' do
 
   it { chef_run.should install_package 'rackspace-monitoring-agent' }
 end
-
-
-

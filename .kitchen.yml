@@ -27,8 +27,8 @@ suites:
       monitoring:
         enabled: true
         agent:
-          token: 0000000000000000000000000000000000000000000000000000000000000000.000000
+          token: '0000000000000000000000000000000000000000000000000000000000000000.000000'
       rackspace:
         cloud_credentials:
-          username: ChangeMe
-          api_key: 00000000000000000000000000000000
+          username: 'ChangeMe'
+          api_key: '00000000000000000000000000000000'
