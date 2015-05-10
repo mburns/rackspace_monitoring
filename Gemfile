@@ -28,5 +28,6 @@ group :development do
   gem 'guard'
   gem 'guard-kitchen'
   gem 'guard-foodcritic'
+  gem 'guard-rspec'
   gem 'guard-rubocop'
 end

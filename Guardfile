@@ -13,3 +13,13 @@ guard :foodcritic, cookbook_paths: '.', cli: ['--epic-fail', 'any'] do
   watch(%r{resources/.+\.rb$})
   watch(/metadata\.rb$/)
 end
+
+guard 'kitchen' do
+  watch(%r{test/.+})
+  watch(%r{^recipes/(.+)\.rb$})
+  watch(%r{^attributes/(.+)\.rb$})
+  watch(%r{^files/(.+)})
+  watch(%r{^templates/(.+)})
+  watch(%r{^providers/(.+)\.rb})
+  watch(%r{^resources/(.+)\.rb})
+end
