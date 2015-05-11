@@ -59,7 +59,7 @@ All you need to use Rackspace Monitoring is a Rackspace account. Set these attri
     <td><tt>['monitoring']['zones']</tt></td>
     <td>Array of Hashes</td>
     <td>The six (6) default Monitoring Zones</td>
-    <td><tt>```shell
+    <td><tt><pre>
       [
         {
           'id' => 'mzdfw',
@@ -98,8 +98,7 @@ All you need to use Rackspace Monitoring is a Rackspace account. Set these attri
           'v6' => '2401:1801:7902:0001::/64',
           'v4' => '119.9.5.0/26'
         }
-      ]```
-    </tt></td>
+      ]</pre></tt></td>
   </tr>
   <tr>
     <td><tt>['monitoring']['agent']['id']</tt></td>
