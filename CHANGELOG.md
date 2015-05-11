@@ -1,3 +1,9 @@
+# 0.3.0
+
+Improve test coverage
+Combine Check and Plugin LWRP
+Improve default checks
+
 # 0.2.0
 
 Include LWRP resources for dynamicly adding and removing Agent, Checks and Plugins.
