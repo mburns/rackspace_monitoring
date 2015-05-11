@@ -16,9 +16,10 @@
 # limitations under the License.
 #
 
-def get_name_from_type(type, label, target)
-  # Given a type ("agent.network") and a target ("eth0"), return a file name.
-  # This includes normalizing or stripping invalid character
+def get_name_from_type(type, target)
+  # Given a type ("agent.network") and an optional target ("eth0"),
+  # return a *.yaml file name to write the agent check out to.
+  # This includes stripping invalid characters for the file name
 
   unless %w(agent plugin remote).include?(type.split(/[.\s]/)[0])
     fail "Invalid type, expecting '{agent,plugin,remote}.foo(.bar)', got '#{type}'."
@@ -26,23 +27,20 @@ def get_name_from_type(type, label, target)
 
   case type
   when 'agent.network'
-    name = "network.#{target}"
+    name = "network-#{target.gsub(' ', '').gsub('/', '').gsub('.', '-').downcase}"
   when 'agent.redis'
     host = 'localhost' # TODO : fixme
     port = 6379
-    name = "redis.#{host}.#{port}"
-  when 'agent.plugin.dir_stats'
-    name = "directory-#{label.gsub(' ', '').gsub('/', '').downcase}.yaml"
-  when 'agent.plugin.haproxy'
-    name = "haproxy-#{label.gsub(' ', '').gsub('/', '').downcase}"
-  when 'agent.plugin.check-mtime'
-    name = "check-mtime-#{label.gsub(' ', '').gsub('/', '').downcase}"
-  when 'agent.plugin.curl'
-    name = "plugin.curl.#{label.gsub(' ', '').gsub('/', '').downcase}"
+    name = "redis-#{host}-#{port}"
+  when /^agent\.plugin(?:\.)?(.*)/
+    #  prepend name with 'foo-' if type is 'agent.plugin.foo', to namespace checks
+    prefix = type.split('.').last
+    #prefix = Regexp.last_match(1).nil? ? 'plugin' : Regexp.last_match(1) # type.gsub(/^agent\.plugin(\.)?/, '') 
+    name = "#{prefix}#{target.gsub(' ', '').gsub('/', '-').gsub('.', '-').downcase}"
   when 'remote.http'
-    name = "http-#{label.gsub(' ', '').gsub('/', '').downcase}"
+    name = "http-#{target.gsub(' ', '').gsub('/', '').gsub('.', '-').downcase}"
   when 'remote.ping'
-    name = "ping-#{label.gsub(' ', '').gsub('/', '').downcase}"
+    name = "ping-#{target.gsub(' ', '').gsub('/', '').gsub('.', '-').downcase}"
   else
     name = type
   end
@@ -51,74 +49,133 @@ def get_name_from_type(type, label, target)
 end
 
 action :create do
+  Chef::Log.debug("Beginning action[:create] for #{new_resource}")
+
+  label = new_resource.label
+  type = new_resource.type # agent.foo
+  info = new_resource.info || {}
+  notification_plan_id = info[notification_plan_id] || node['monitoring']['notification_plan_id']
+  consecutive_count = info['consecutive_count'] || 2
+  period = new_resource.period || info['period']
+  timeout = new_resource.timeout || info['timeout']
+  alarm = new_resource.alarm || info['alarm'] || node['monitoring']['alarm']
+
+  cookbook_name = info['cookbook'] || 'rackspace_monitoring'
+  yaml_cookbook = new_resource.yaml_cookbook || 'rackspace_monitoring'
+  yaml_source = new_resource.yaml_source
+
+  # remote checks
+  target = new_resource.target || info['target'] || ''
+  target_alias = new_resource.target_alias
+  target_hostname = new_resource.target_hostname
+  target_resolver = new_resource.target_resolver
+  monitoring_zones = new_resource.monitoring_zones || node['monitoring']['zones'].map{ |x| x['id'] }
+
+  # failure conditions
+  fail 'check type cannot be nil' if type.nil?
+  if notification_plan_id.nil?
+    fail "either notification_plan_id or node['monitoring']['notification_plan_id'] must be defined"
+  end
+  if type =~ /^remote/ && monitoring_zones.count == 0
+    fail 'monitoring_zones must be defined for remote checks. Example: [mzdfw, mzord, mziad]'
+  end
+
+  # plugin checks require a custom script (plugin) to execute
+  if type =~ /^agent\.plugin/
+    source = new_resource.source
+    file = new_resource.file || source.split('/').last
+
+    directory node['monitoring']['plugind'] do
+      owner 'root'
+      group 'root'
+      mode '00755'
+      recursive true
+    end
+    new_resource.updated_by_last_action(true)
+
+    # copy the `file` (via chef) or `source` (via Internet) to be used by the plugin check
+    if source.nil?
+      cookbook_file "#{node['monitoring']['plugind']}/#{file}" do
+        source file
+        cookbook cookbook
+        owner 'root'
+        group 'root'
+        mode '00755'
+      end
+      new_resource.updated_by_last_action(true)
+    else
+      if source.include?('/')
+        source = "https://raw.githubusercontent.com/racker/rackspace-monitoring-agent-plugins-contrib/master/#{source}"
+      end
+
+      remote_file "#{node['monitoring']['plugind']}/#{file}" do
+        source source
+        owner 'root'
+        group 'root'
+        mode '00755'
+      end
+      new_resource.updated_by_last_action(true)
+    end
+  end
+
+  # determine the filename from by type and target of the check
+  name = get_name_from_type(type, target)
+
+  Chef::Log.debug("Creating check #{name} from (#{type}, #{label}, #{info[:target]}).")
+
   directory node['monitoring']['confd'] do
     owner 'root'
     group 'root'
     mode '00755'
     recursive true
   end
-
-  type = new_resource.type
-  label = new_resource.label
-  details = new_resource.details || {}
-  notification_plan_id = details[:notification_plan_id] || node['monitoring']['notification_plan_id']
-  consecutive_count = details[:consecutive_count] || 2
-  target_alias = new_resource.target_alias
-  target_hostname = new_resource.target_hostname
-  target_resolver = new_resource.target_resolver
-  monitoring_zones = new_resource.monitoring_zones || []
-
-  if notification_plan_id.nil?
-    fail "either notification_plan_id or node['monitoring']['notification_plan_id'] must be defined"
-  end
-
-  fail 'check type cannot be null' if type.nil?
-
-  if type =~ /remote/ && monitoring_zones.count == 0
-    fail 'monitoring_zones must be defined for remote checks. Example: [mzdfw, mzord, mziad]'
-  end
-
-  name = get_name_from_type(type, label, details[:target])
-
-  Chef::Log.debug("Creating check #{name} of #{type}.")
+  new_resource.updated_by_last_action(true)
 
   template "#{node['monitoring']['confd']}/#{name}.yaml" do
-    source "confd/#{type}.yaml.erb"
+    source yaml_source || "confd/#{type}.yaml.erb"
+    cookbook yaml_cookbook
     owner 'root'
     group 'root'
     mode '00644'
     variables(
+      alarm: alarm,
       consecutive_count: consecutive_count,
-      count: details[:count],
-      expected_code: details[:expected_code],
-      file_to_check: details[:file_to_check],
-      frontend_age_critical_min: details[:frontend_age_critical_min] || 0,
-      frontend_age_warning_min: details[:frontend_age_warning_min] || 100,
+      cookbook_name: 'cloud_monitoring',
+      disabled: info['disabled'] || false,
+      file: file,
+      info: info,
       label: label,
-      max_files_warn: details[:max_files_warn] || nil,
-      max_files_crit: details[:max_files_crit] || nil,
-      max_size_mb_warn: details[:max_size_mb_warn] || nil,
-      max_size_mb_crit: details[:max_size_mb_crit] || nil,
       monitoring_zones: monitoring_zones,
       notification_plan_id: notification_plan_id,
-      target: details[:target],
+      period: period,
       target_alias: target_alias,
       target_hostname: target_hostname,
       target_resolver: target_resolver,
-      type: type,
-      url: details[:url]
+      timeout: timeout,
+      type: type
     )
-    notifies :restart, resources(service: 'rackspace-monitoring-agent'), :delayed
+    if node['monitoring']['enabled']
+      notifies :restart, 'service[rackspace-monitoring-agent]', :delayed
+    end
   end
+  new_resource.updated_by_last_action(true)
 end
 
 action :delete do
-  type = new_resource.type
-  name = get_name_from_type(type, details[:target])
+  Chef::Log.debug("Beginning action[:delete] for #{new_resource}")
+
+  name = get_name_from_type(type, info['target'])
+  file = new_resource.file || info['details']['file'] || new_resource.source.split('/').last
+
+  file "#{node['monitoring']['plugind']}/#{file}" do
+    action :delete
+  end
+  new_resource.updated_by_last_action(true)
 
   file "#{node['monitoring']['confd']}/#{name}.yaml" do
     action :delete
   end
+  new_resource.updated_by_last_action(true)
 end
 
 alias_method :action_add, :action_create

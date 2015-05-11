@@ -18,7 +18,7 @@
 
 def monitoring_repository(action)
   # call with :add or :remote, defaults to :add
-  action ||= 'add'.to_sym
+  action ||= 'add'
 
   case node['platform_family']
   when 'debian'
@@ -44,18 +44,20 @@ end
 action :create do
   token = new_resource.token || node['monitoring']['agent']['token']
   id = new_resource.id || node['monitoring']['agent']['id'] || node['fqdn']
-
-  endpoints = new_resource.endpoints || []
-  query_endpoints = new_resource.query_endpoints || []
+  guid = new_resource.guid
+  
   proxy_url = new_resource.proxy_url
+  insecure = new_resource.insecure
+  upgrade = new_resource.upgrade
+  snet_region = new_resource.snet_region
+  endpoints = new_resource.endpoints
+  query_endpoints = new_resource.query_endpoints
+
+  Chef::Log.debug("Monitoring is disabled, set your node['rackspace']['cloud_credentials']")
 
   fail 'agent token must be defined, either on the node or in data bags' if token.nil?
 
-  unless node['monitoring']['enabled']
-    Chef::Log.info("Monitoring is disabled, set your node['rackspace']['cloud_credentials']")
-    next
-  end
-
+  # add the appropriate package repository to install 'rackspace-monitoring-agent'
   monitoring_repository(:add)
 
   package 'rackspace-monitoring-agent' do
@@ -65,11 +67,9 @@ action :create do
       version node['monitoring']['agent']['version']
       action :install
     end
-    notifies :restart, 'service[rackspace-monitoring-agent]'
-  end
-
-  unless endpoints.is_a?(Array)
-    endpoints = endpoints.split!(',') # cast to array split on commas
+    if node['monitoring']['enabled']
+      notifies :restart, 'service[rackspace-monitoring-agent]', :delayed
+    end
   end
 
   execute 'agent-setup-cloud' do
@@ -79,8 +79,8 @@ action :create do
         --apikey #{node['rackspace']['cloud_credentials']['api_key']}
       EOH
     # the filesize is zero if the agent has not been configured
-    only_if { File.size?('/etc/rackspace-monitoring-agent.cfg').nil? }
-    only_if { node['monitoring']['enabled'] == true }
+    only_if { ::File.exist?('/etc/rackspace-monitoring-agent.cfg') }
+    only_if { node['monitoring']['enabled'] }
   end
 
   template '/etc/rackspace-monitoring-agent.cfg' do
@@ -89,53 +89,69 @@ action :create do
     group 'root'
     mode '00600'
     variables(
-      id: id,
+      cookbook_name: 'rackspace_monitoring',
       token: token,
+      id: id,
+      guid: guid,
+      proxy_url: proxy_url,
+      insecure: insecure,
+      upgrade: upgrade,
+      snet_region: snet_region,
       endpoints: endpoints,
-      proxy_url: proxy_url
+      query_endpoints: query_endpoints
     )
-    notifies :restart, 'service[rackspace-monitoring-agent]', :delayed
+    if node['monitoring']['enabled']
+      notifies :restart, 'service[rackspace-monitoring-agent]', :delayed
+    end
   end
+  new_resource.updated_by_last_action(true)
 
   service 'rackspace-monitoring-agent' do
     supports start: true, status: true, stop: true, restart: true
-    case node[:platform]
+    case node['platform']
     when 'ubuntu'
-      if node[:platform_version].to_f >= 9.10 && node[:platform_version].to_f <= 14.10
+      if node['platform_version'].to_f >= 9.10 && node['platform_version'].to_f <= 14.10
         provider Chef::Provider::Service::Upstart
       end
     end
-    action %w(enable start)
-    only_if { node['monitoring']['enabled'] == true }
+    action node['monitoring']['enabled'] ? %w(enable start) : %w(disable stop)
+    #only_if { node['monitoring']['enabled'] == true }
   end
+  new_resource.updated_by_last_action(true)
 end
 
 action :delete do
   service 'rackspace-monitoring-agent' do
     action %w(disable stop)
   end
+  new_resource.updated_by_last_action(true)
 
   file '/etc/rackspace-monitoring-agent.cfg' do
     action :delete
   end
+  new_resource.updated_by_last_action(true)
 
   monitoring_repository(:remove)
+  new_resource.updated_by_last_action(true)
 
   package 'rackspace-monitoring-agent' do
     action :remove
   end
+  new_resource.updated_by_last_action(true)
 end
 
 action :disable do
   service 'rackspace-monitoring-agent' do
     action %w(disable stop)
   end
+  new_resource.updated_by_last_action(true)
 end
 
 action :enable do
   service 'rackspace-monitoring-agent' do
     action %w(enable start)
   end
+  new_resource.updated_by_last_action(true)
 end
 
 alias_method :action_add, :action_create

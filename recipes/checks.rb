@@ -17,89 +17,21 @@
 # limitations under the License.
 #
 
-directory node['monitoring']['confd'] do
-  owner 'root'
-  group 'root'
-  mode '00755'
-end
-
-# basic system monitors
-[
-  'agent.cpu',
-  'agent.load',
-  'agent.memory'
-].each do |type|
-  monitor = type.partition('.')[2]
+# System Health, see: http://docs.rackspace.com/cm/api/v1.0/cm-devguide/content/appendix-check-types-agent.html
+%w(
+  agent.cpu
+  agent.disk
+  agent.load_average
+  agent.memory
+  agent.network
+).each do |check|
+  monitor = check.partition('.')[2]
   rackspace_monitoring_check monitor do
-    type type
-    action :create
-    details(
-      consecutive_count: 2,
-      cookbook: node['monitoring'][monitor]['cookbook']
+    type check
+    alarm node['monitoring'][monitor]['alarm']
+    info(
+      node['monitoring'][monitor]
     )
-    only_if { node['monitoring'][monitor]['disabled'] == false }
-  end
-end
-
-# custom monitors
-node['monitoring']['custom_monitors']['name'].each do |monitor|
-  monitor_source = node['monitoring']['custom_monitors'][monitor]['source']
-  monitor_variables = node['monitoring']['custom_monitors'][monitor]['variables']
-
-  rackspace_monitoring_check monitor do
-    type monitor_source
-    details(monitor_variables)
-    only_if { node['monitoring'][monitor]['disabled'] == false }
-  end
-end
-
-# http
-node['monitoring']['remote_http']['name'].each do |monitor|
-  monitor_source = node['monitoring']['remote_http'][monitor]['source']
-  monitor_variables = node['monitoring']['remote_http'][monitor]['variables']
-
-  rackspace_monitoring_check monitor do
-    type monitor_source || 'remote.http'
-    details(monitor_variables)
-    only_if { node['monitoring'][monitor]['disabled'] == false }
-  end
-end
-
-# service monitoring
-unless node['monitoring']['service']['name'].empty?
-
-  rackspace_monitoring_plugin 'service_mon.sh' do
-    source 'service_mon.sh.erb'
-    cookbook node['monitoring']['service_mon']['cookbook']
-    details(
-      cookbook_name: cookbook_name
-    )
-  end
-
-  node['monitoring']['service']['name'].each do |service_name|
-    rackspace_monitoring_check service_name do
-      type 'agent.service'
-      action :create
-      details(
-        service_name: service_name
-      )
-      only_if { node['monitoring'][monitor]['disabled'] == false }
-    end
-  end
-end
-
-# Network
-node['network']['interfaces'].each_pair do |int, values|
-  next if %w(lo0 lo loopback0).include?(int)
-
-  rackspace_monitoring_check "Network - #{int}" do
-    type 'agent.network'
-    action :create
-    details(
-      target: int,
-      options: values
-    )
-    only_if { node['monitoring']['filesystem']['disabled'] == false }
   end
 end
 
@@ -107,11 +39,69 @@ end
 node['monitoring']['filesystem']['target'].each do |disk, mount|
   rackspace_monitoring_check "Filesystem - #{mount}" do
     type 'agent.filesystem'
-    action :create
-    details(
+    alarm node['monitoring']['filesystem']['alarm']
+    info(
+      disabled: node['monitoring']['filesystem']['disabled'],
       disk: disk,
       target: mount
     )
-    only_if { node['monitoring']['filesystem']['disabled'] == false }
   end
+end
+
+# Network
+node['network']['interfaces'].each_pair do |int, values|
+  next if %w(lo0 lo loopback0).include?(int) # skip loopback
+
+  rackspace_monitoring_check "Network - #{int}" do
+    type 'agent.network'
+    target int
+    info(
+      options: values
+    )
+  end
+end
+
+# Service monitoring
+unless node['monitoring']['service']['name'].empty?
+  node['monitoring']['service']['name'].each do |service_name|
+    rackspace_monitoring_check service_name do
+      type 'agent.plugin.service'
+      file 'service_mon.sh'
+      info(
+        disabled: node['monitoring'][monitor]['disabled'],
+        cookbook: node['monitoring']['service_mon']['cookbook'],
+        service_name: service_name
+      )
+    end
+  end
+end
+
+# chef-client
+rackspace_monitoring_check node['monitoring']['chef-client']['label'] do
+  type 'agent.plugin'
+  source node['monitoring']['chef-client']['file_url']
+  info(node['monitoring']['chef-client'])
+end
+
+# Remote HTTP
+node['monitoring']['remote_http'].each_pair do |monitor, values|
+  Chef::Log.info("#{monitor} => #{values}. kthxbye")
+  rackspace_monitoring_check monitor do
+    type 'remote.http'
+    info(values)
+  end
+end
+
+# Custom checks
+rackspace_monitoring_check 'directory /etc' do
+  type 'agent.plugin.directory'
+  file 'dir_stats.sh'
+  target '/etc'
+  info({})
+end
+
+rackspace_monitoring_check 'file mtime /etc/hosts' do
+  type 'agent.plugin.file'
+  file 'check-mtime.sh'
+  target '/etc/hosts'
 end
