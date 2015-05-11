@@ -35,7 +35,7 @@ def get_name_from_type(type, target)
   when /^agent\.plugin(?:\.)?(.*)/
     #  prepend name with 'foo-' if type is 'agent.plugin.foo', to namespace checks
     prefix = type.split('.').last
-    #prefix = Regexp.last_match(1).nil? ? 'plugin' : Regexp.last_match(1) # type.gsub(/^agent\.plugin(\.)?/, '') 
+    # prefix = Regexp.last_match(1).nil? ? 'plugin' : Regexp.last_match(1) # type.gsub(/^agent\.plugin(\.)?/, '')
     name = "#{prefix}#{target.gsub(' ', '').gsub('/', '-').gsub('.', '-').downcase}"
   when 'remote.http'
     name = "http-#{target.gsub(' ', '').gsub('/', '').gsub('.', '-').downcase}"
@@ -69,7 +69,7 @@ action :create do
   target_alias = new_resource.target_alias
   target_hostname = new_resource.target_hostname
   target_resolver = new_resource.target_resolver
-  monitoring_zones = new_resource.monitoring_zones || node['monitoring']['zones'].map{ |x| x['id'] }
+  monitoring_zones = new_resource.monitoring_zones || node['monitoring']['zones'].map { |x| x['id'] }
 
   # failure conditions
   fail 'check type cannot be nil' if type.nil?

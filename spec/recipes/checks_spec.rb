@@ -16,7 +16,7 @@ describe 'rackspace_monitoring::checks' do
       node.set['monitoring']['remote_http']['example']['disabled'] = true
     end.converge(described_recipe)
   end
-  
+
   it { expect(chef_run).to create_directory('/etc/rackspace-monitoring-agent.conf.d') }
   it { expect(chef_run).to create_directory('/usr/lib/rackspace-monitoring-agent/plugins') }
 
@@ -33,5 +33,4 @@ describe 'rackspace_monitoring::checks' do
 
   it { expect(chef_run).to render_file('/etc/rackspace-monitoring-agent.conf.d/directory-etc.yaml') }
   it { expect(chef_run).to render_file('/etc/rackspace-monitoring-agent.conf.d/file-etc-hosts.yaml') }
-
 end

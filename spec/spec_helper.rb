@@ -7,7 +7,7 @@ require 'chefspec/berkshelf'
 
 RSpec.configure do |config|
   config.formatter = :documentation
-  
+
   # Specify the Chef log_level (default: :warn)
   config.log_level = :debug
 

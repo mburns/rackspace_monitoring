@@ -7,7 +7,7 @@ attribute :type, kind_of: String
 attribute :monitoring_zones, kind_of: Array
 attribute :period, kind_of: Integer, default: nil
 attribute :timeout, kind_of: Integer, default: nil
-attribute :alarm, :kind_of => [TrueClass, FalseClass], default: false
+attribute :alarm, kind_of: [TrueClass, FalseClass], default: false
 
 # remote-related options
 attribute :target, kind_of: String, default: nil

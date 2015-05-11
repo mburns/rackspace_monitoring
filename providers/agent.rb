@@ -45,7 +45,7 @@ action :create do
   token = new_resource.token || node['monitoring']['agent']['token']
   id = new_resource.id || node['monitoring']['agent']['id'] || node['fqdn']
   guid = new_resource.guid
-  
+
   proxy_url = new_resource.proxy_url
   insecure = new_resource.insecure
   upgrade = new_resource.upgrade
@@ -115,7 +115,7 @@ action :create do
       end
     end
     action node['monitoring']['enabled'] ? %w(enable start) : %w(disable stop)
-    #only_if { node['monitoring']['enabled'] == true }
+    # only_if { node['monitoring']['enabled'] == true }
   end
   new_resource.updated_by_last_action(true)
 end

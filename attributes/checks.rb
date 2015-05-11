@@ -29,7 +29,7 @@ unless node['filesystem'].nil?
   end
 end
 
-default['monitoring']['load_average']['disabled']= false
+default['monitoring']['load_average']['disabled'] = false
 default['monitoring']['load_average']['alarm']   = false
 default['monitoring']['load_average']['crit']    = crit_load_threshold
 default['monitoring']['load_average']['warn']    = warn_load_threshold

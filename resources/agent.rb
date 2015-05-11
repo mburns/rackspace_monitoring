@@ -10,8 +10,8 @@ attribute :query_endpoints, kind_of: Array, default: [] # [ IP:Port, ]
 attribute :snet_region, kind_of: Array, default: nil
 
 attribute :proxy_url, kind_of: String, default: nil
-attribute :upgrade, :kind_of => [TrueClass, FalseClass], default: false
-attribute :insecure, :kind_of => [TrueClass, FalseClass], default: false
+attribute :upgrade, kind_of: [TrueClass, FalseClass], default: false
+attribute :insecure, kind_of: [TrueClass, FalseClass], default: false
 
 alias_method :monitoring_id, :id
 alias_method :monitoring_token, :token
