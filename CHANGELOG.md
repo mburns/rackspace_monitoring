@@ -1,3 +1,7 @@
+# 0.4.0
+
+Chef Supermarket!
+
 # 0.3.0
 
 Improve test coverage
