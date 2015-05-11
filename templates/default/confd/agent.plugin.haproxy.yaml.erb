@@ -6,26 +6,28 @@
 
 type    : agent.plugin
 label   : <%= @label %>
-disabled: <%= node['monitoring']['network']['disabled'] %>
+disabled: <%= @disabled %>
 period  : <%= @period || 60 %>
 timeout : <%= @timeout || 10 %>
 details :
-    file: haproxy.rb
-    args: [ "-s", "<%= t_socket %>" ]
+  file: haproxy.rb
+  args: [ "-s", "<%= t_socket %>" ]
+<% if @alarm %>     
 alarms  :
-    client-conns:
-        label: Client connections
-        notification_plan_id: <%= @notification_plan_id %>
-        criteria: |
+  client-conns:
+    label: Client connections
+    notification_plan_id: <%= @notification_plan_id %>
+    criteria: |
 <% if @consecutive_count != nil -%>
-            :set consecutiveCount=<%= @consecutive_count %>
+      :set consecutiveCount=<%= @consecutive_count %>
 <% end -%>
-            if (metric['connections'] < <%= @frontend_conns_critical_min %>) {
-              return new AlarmStatus(CRITICAL, '#{connections} client connections reported.');
-            }
-            
-            if (metric['connections'] < <%= @frontend_conns_warning_min %>) {
-              return new AlarmStatus(WARNING, '#{connections} client connections reported.');
-            }
-            
-            return new AlarmStatus(OK, '#{connections} client connections reported.');
+      if (metric['connections'] < <%= @frontend_conns_critical_min %>) {
+        return new AlarmStatus(CRITICAL, '#{connections} client connections reported.');
+      }
+      
+      if (metric['connections'] < <%= @frontend_conns_warning_min %>) {
+        return new AlarmStatus(WARNING, '#{connections} client connections reported.');
+      }
+      
+      return new AlarmStatus(OK, '#{connections} client connections reported.');
+<% end -%>

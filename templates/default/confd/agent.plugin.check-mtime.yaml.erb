@@ -4,26 +4,28 @@
 
 type    : agent.plugin
 label   : <%= @label %>
-disabled: <%= node['monitoring']['network']['disabled'] %>
+disabled: <%= @disabled %>
 period  : <%= @period || 60 %>
-timeout : <%= @timeout || 10 %>
+timeout : <%= @timeout || 30 %>
 details :
-    file: check-mtime.sh
-    args: [ "<%= @file_to_check %>" ]
+  file  : check-mtime.sh
+  args  : <%= @info['file_to_check'].inspect %>
+<% if @alarm == true %>
 alarms  :
-    file-mod-age:
-        label: File Modification Age
-        notification_plan_id: <%= @notification_plan_id %>
-        criteria: |
+  file-mod-age:
+    label: File Modification Age
+    notification_plan_id: <%= @notification_plan_id %>
+    criteria: |
 <% if @consecutive_count != nil -%>
             :set consecutiveCount=<%= @consecutive_count %>
 <% end -%>
-            if (metric['age'] > <%= @frontend_age_critical_min %>) {
+            if (metric['age'] > <%= @info['frontend_age_critical_min'] %>) {
               return new AlarmStatus(CRITICAL, 'file last modified #{age} seconds ago.');
             }
-            
-            if (metric['age'] > <%= @frontend_age_warning_min %>) {
+
+            if (metric['age'] > <%= @info['frontend_age_warning_min'] %>) {
               return new AlarmStatus(WARNING, 'file last modified #{age} seconds ago.');
             }
-            
+
             return new AlarmStatus(OK, 'file last modified #{age} seconds ago.');
+<% end -%>

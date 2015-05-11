@@ -2,22 +2,25 @@
 # Controlling Cookbook: <%= @cookbook_name %>
 #
 
+<% crit = @crit || node['monitoring']['cpu']['crit'] -%>
+<% warn = @warn || node['monitoring']['cpu']['warn'] -%>
+
 type    : agent.cpu
 label   : CPU
-disabled: <%= node['monitoring']['cpu']['disabled'] %>
-period  : <%= node['monitoring']['cpu']['period'] %>
-timeout : <%= node['monitoring']['cpu']['timeout'] %>
-<% if node['monitoring']['cpu']['alarm'] == true %>
+disabled: <%= @disabled %>
+period  : <%= @period || 60 %>
+timeout : <%= @timeout || 30 %>
+<% if @alarm == true %>
 alarms  :
     alarm-cpu:
         label: CPU Usage
-        notification_plan_id: <%= node['monitoring']['notification_plan_id'] %>
+        notification_plan_id: <%= @notification_plan_id %>
         criteria: |
-            if (metric['usage_average'] > <%= node['monitoring']['cpu']['crit'] %> ) {
-              return new AlarmStatus(CRITICAL, 'CPU usage is #{usage_average}%, above your critical threshold of <%= node['monitoring']['cpu']['crit'] %>%');
+            if (metric['usage_average'] > <%= crit %> ) {
+              return new AlarmStatus(CRITICAL, 'CPU usage is #{usage_average}%, above your critical threshold of <%= crit %>%');
             }
-            if (metric['usage_average'] > <%= node['monitoring']['cpu']['warn'] %> ) {
-              return new AlarmStatus(WARNING, 'CPU usage is #{usage_average}%, above your warning threshold of <%= node['monitoring']['cpu']['warn'] %>%');
+            if (metric['usage_average'] > <%= warn %> ) {
+              return new AlarmStatus(WARNING, 'CPU usage is #{usage_average}%, above your warning threshold of <%= warn %>%');
             }
-            return new AlarmStatus(OK, 'CPU usage is #{usage_average}%, below your warning threshold of <%= node['monitoring']['cpu']['warn'] %>%');
+            return new AlarmStatus(OK, 'CPU usage is #{usage_average}%, below your warning threshold of <%= warn %>%');
 <% end %>

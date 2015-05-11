@@ -4,7 +4,7 @@
 
 type    : remote.ping
 label   : <%= @label %>
-disabled: <%= node['monitoring']['network']['disabled'] %>
+disabled: <%= @disabled %>
 period  : <%= @period || 60 %>
 timeout : <%= @timeout || 30 %>
 <% if @target_alias -%>
@@ -18,15 +18,16 @@ target_resolver: <%= @target_resolver %>
 <% end -%>
 monitoring_zones_poll:
 <% @monitoring_zones.each do |zone| -%>
-               - <%= zone %>
+             - <%= zone %>
 <% end -%>
 details :
-    count : <%= @count || 5 %>
+  count : <%= @info['count'] || 5 %>
+<% if @alarm == true %>
 alarms  :
-    packet-loss:
-        label: Packet loss
-        notification_plan_id: <%= @notification_plan_id %>
-        criteria: |
+  packet-loss:
+    label: Packet loss
+    notification_plan_id: <%= @notification_plan_id %>
+    criteria: |
 <% if @consecutive_count != nil -%>
             :set consecutiveCount=<%= @consecutive_count %>
 <% end -%>
@@ -37,3 +38,4 @@ alarms  :
               return new AlarmStatus(WARNING, 'Packet loss is greater than 5%');
             }
             return new AlarmStatus(OK, 'Packet loss is normal');
+<% end -%>

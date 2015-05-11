@@ -4,10 +4,10 @@
 
 type    : agent.memory
 label   : Memory
-disabled: <%= node['monitoring']['memory']['disabled'] %>
-period  : <%= node['monitoring']['memory']['period'] %>
-timeout : <%= node['monitoring']['memory']['timeout'] %>
-<% if node['monitoring']['memory']['alarm'] == true %>
+disabled: <%= @disabled %>
+period  : <%= @period || 60 %>
+timeout : <%= @timeout || 30 %>
+<% if @alarm == true %>
 alarms  :
     alarm-memory:
         label: Memory Usage

@@ -2,24 +2,27 @@
 # Controlling Cookbook: <%= @cookbook_name %>
 #
 
+<% crit = node['monitoring']['filesystem']['crit'] -%>
+<% warn = node['monitoring']['filesystem']['warn'] -%>
+
 type    : agent.filesystem
 label   : Filesystem check on <%= @mount %>
-disabled: <%= node['monitoring']['filesystem']['disabled'] %>
-period  : <%= node['monitoring']['filesystem']['period'] %>
-timeout : <%= node['monitoring']['filesystem']['timeout'] %>
+disabled: <%= @disabled %>
+period  : <%= @period || 60 %>
+timeout : <%= @timeout || 30 %>
 details :
-  target: <%= @mount %>
-<% if node['monitoring']['filesystem']['alarm'] == true %>
+  target: <%= @mount || @target %>
+<% if @alarm == true %>
 alarms  :
     alarm-disk-size:
         label: usage on <%= @mount %>
-        notification_plan_id: <%= node['monitoring']['notification_plan_id'] %>
+        notification_plan_id: <%= @notification_plan_id %>
         criteria: |
-            if (percentage(metric['used'], metric['total']) > <%= node['monitoring']['filesystem']['crit']  %> ) {
-                return new AlarmStatus(CRITICAL, 'Disk usage is above <%= node['monitoring']['filesystem']['crit'] %>%, #{used} out of #{total}');
+            if (percentage(metric['used'], metric['total']) > <%= crit  %> ) {
+                return new AlarmStatus(CRITICAL, 'Disk usage is above <%= crit %>%, #{used} out of #{total}');
             }
-            if (percentage(metric['used'], metric['total']) > <%= node['monitoring']['filesystem']['warn'] %> ) {
-                return new AlarmStatus(WARNING, 'Disk usage is above <%= node['monitoring']['filesystem']['warn'] %>%, #{used} out of #{total}');
+            if (percentage(metric['used'], metric['total']) > <%= warn %> ) {
+                return new AlarmStatus(WARNING, 'Disk usage is above <%= warn %>%, #{used} out of #{total}');
             }
-            return new AlarmStatus(OK, 'Disk usage is below your warning threshold of <%= node['monitoring']['filesystem']['warn'] %>%, #{used} out of #{total}');
+            return new AlarmStatus(OK, 'Disk usage is below your warning threshold of <%= warn %>%, #{used} out of #{total}');
 <% end %>

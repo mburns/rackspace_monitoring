@@ -1,0 +1,52 @@
+# CHEF MANAGED FILE: DO NOT EDIT
+# Controlling Cookbook: <%= @cookbook_name %>
+#
+
+type    : agent.plugin
+label   : <%= @label %>
+disabled: <%= @disabled %>
+period  : <%= @period || 60 %>
+timeout : <%= @timeout || 30 %>
+details :
+  file  : <%= @info['file'] || 'dir_stats.sh' %>
+  args  : <%= @target.inspect %>
+<% if @alarm == true %>
+alarms  :
+<% if @info['max_size_mb_warn'] != nil || @info['max_size_mb_crit'] != nil -%>
+  max-dir-size:
+    label: Size of <%= @target %>
+    notification_plan_id: <%= @notification_plan_id %>
+    criteria: |
+<% if @info['max_size_mb_crit'] != nil -%>
+<% if @consecutive_count != nil -%>
+            :set consecutiveCount=<%= @consecutive_count %>
+<% end -%>
+            if (metric['total_size'] > <%= @info['max_size_mb_crit'] %>) {
+                return new AlarmStatus(CRITICAL, 'Directory uses #{total_size} MB, above your critical threshold of <%= @info['max_size_mb_crit'] %> MB');
+            }
+<% end -%>
+<% if @info['max_size_mb_warn'] != nil -%>
+            if (metric['total_size'] > <%= @info['max_size_mb_warn'] %>) {
+                return new AlarmStatus(WARNING, 'Directory uses #{total_size} MB, above your warning threshold of <%= @info['max_size_mb_warn'] %> MB');
+            }
+<% end -%>
+            return new AlarmStatus(OK, 'Directory uses #{total_size} MB, below your threshold of <%= @info['max_size_mb_warn'] != nil ? @info['max_size_mb_warn'] : @info['max_size_mb_crit'] %> MB');
+<% end -%>
+<% if @info['max_files_warn'] != nil || @info['max_files_crit'] != nil  -%>
+    max-file-count:
+        label: File count in <%= @target %>
+        notification_plan_id: <%= @notification_plan_id %>
+        criteria: |
+<% if @info['max_files_crit'] != nil -%>
+            if (metric['total_files'] > <%= @info['max_files_crit'] %>) {
+                return new AlarmStatus(CRITICAL, 'Directory contains #{total_files} files, above your critical threshold of <%= @info['max_files_crit'] %>');
+            }
+<% end -%>
+<% if @info['max_files_warn'] != nil -%>
+            if (metric['total_files'] > <%= @info['max_files_warn'] %>) {
+                return new AlarmStatus(WARNING, 'Directory contains #{total_files} files, above your warning threshold of <%= @info['max_files_warn'] %>');
+            }
+<% end -%>
+            return new AlarmStatus(OK, 'Directory contains #{total_files} files, below your threshold of <%= @info['max_files_warn'] != nil ? @info['max_files_warn'] : @info['max_files_crit'] %>');
+<% end -%>
+<% end -%>

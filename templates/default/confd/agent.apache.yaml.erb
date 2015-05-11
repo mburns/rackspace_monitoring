@@ -5,13 +5,13 @@
 type    : <%= @type %>
 label   : <%= @label %>
 disabled: <%= @disabled %>
-period  : <%= @period %>
-timeout : <%= @timeout %>
+period  : <%= @period || 60 %>
+timeout : <%= @timeout || 30 %>
 <% if @alarm == true %>
 alarms  :
   alarm-<%= @type %>:
     label: <%= @type %> Usage
         notification_plan_id: <%= @notification_plan_id %>
         criteria: |
-          <%= @alarm_criteria %>
+          <%= @alarm['criteria'] %>
 <% end %>

@@ -6,28 +6,30 @@
 
 type    : agent.plugin
 label   : <%= @label %>
-disabled: <%= node['monitoring']['network']['disabled'] %>
+disabled: <%= @disabled %>
 period  : <%= @period || 60 %>
 timeout : <%= @timeout || 30 %>
 details :
-    file: etcd.py
-    args: [ "--url", "<%= host %>" ]
+  file: etcd.py
+  args: [ "--url", "<%= host %>" ]
+<% if @alarm %>   
 alarms  :
-    node-state:
-        label: Node state
-        notification_plan_id: <%= @notification_plan_id %>
-        criteria: |
+  node-state:
+    label: Node state
+    notification_plan_id: <%= @notification_plan_id %>
+    criteria: |
 <% if @consecutive_count != nil -%>
-            :set consecutiveCount=<%= @consecutive_count %>
+      :set consecutiveCount=<%= @consecutive_count %>
 <% end -%>
-            if (metric['state'] != 'follower' && metric['state'] != 'leader') {
-              return new AlarmStatus(CRITICAL, 'Node is neither leader nor follower.');
-            }
-            
-            if (metric['state'] == 'follower') {
-              return new AlarmStatus(OK, 'Node is following #{leader}.');
-            }
-            
-            if (metric['state'] == 'leader') {
-              return new AlarmStatus(OK, 'Node is leading the cluster.');
-            }
+      if (metric['state'] != 'follower' && metric['state'] != 'leader') {
+        return new AlarmStatus(CRITICAL, 'Node is neither leader nor follower.');
+      }
+      
+      if (metric['state'] == 'follower') {
+        return new AlarmStatus(OK, 'Node is following #{leader}.');
+      }
+      
+      if (metric['state'] == 'leader') {
+        return new AlarmStatus(OK, 'Node is leading the cluster.');
+      }
+<% end -%>

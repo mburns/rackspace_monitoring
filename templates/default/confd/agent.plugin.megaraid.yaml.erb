@@ -4,34 +4,36 @@
 
 type    : agent.plugin
 label   : <%= @label %>
-disabled: <%= node['monitoring']['network']['disabled'] %>
+disabled: <%= @disabled %>
 period  : <%= @period || 900 %>
 timeout : <%= @timeout || 30 %>
 details :
-    file: megaraid.sh
-    timeout : 30000
+  file: megaraid.sh
+  timeout: 30000
+<% if @alarm %>
 alarms  :
-    smart-health:
-        label: SMART health
-        notification_plan_id: <%= @notification_plan_id %>
-        criteria: |
+  smart-health:
+    label: SMART health
+    notification_plan_id: <%= @notification_plan_id %>
+    criteria: |
 <% if @consecutive_count != nil -%>
-            :set consecutiveCount=<%= @consecutive_count %>
+      :set consecutiveCount=<%= @consecutive_count %>
 <% end -%>
-            if (metric['failed'] > 1) {
-             return new AlarmStatus(CRITICAL, '#{failed} failed drives: #{report}');
-            }
+      if (metric['failed'] > 1) {
+       return new AlarmStatus(CRITICAL, '#{failed} failed drives: #{report}');
+      }
 
-            if (metric['failed'] == 1) {
-             return new AlarmStatus(WARNING, '1 failed drive: #{report}');
-            }
-            
-            if (metric['prefail'] != 0) {
-             return new AlarmStatus(WARNING, '#{prefail} prefail drive(s): #{report}');
-            }
-            
-            if (metric['unknown'] != 0) {
-             return new AlarmStatus(WARNING, '#{unknown} unknown drive(s): #{report}');
-            }
-            
-            return new AlarmStatus(OK, '#{ok} drive(s) OK');
+      if (metric['failed'] == 1) {
+       return new AlarmStatus(WARNING, '1 failed drive: #{report}');
+      }
+      
+      if (metric['prefail'] != 0) {
+       return new AlarmStatus(WARNING, '#{prefail} prefail drive(s): #{report}');
+      }
+      
+      if (metric['unknown'] != 0) {
+       return new AlarmStatus(WARNING, '#{unknown} unknown drive(s): #{report}');
+      }
+      
+      return new AlarmStatus(OK, '#{ok} drive(s) OK');
+<% end -%>

@@ -4,7 +4,7 @@
 
 type    : remote.http
 label   : <%= @label %>
-disabled: <%= node['monitoring']['network']['disabled'] %>
+disabled: <%= @disabled %>
 period  : <%= @period || 60 %>
 timeout : <%= @timeout || 10 %>
 <% if @target_alias -%>
@@ -21,24 +21,25 @@ monitoring_zones_poll:
                - <%= zone %>
 <% end -%>
 details :
-    url : <%= @url %>
+  url : <%= @url %>
+<% if @alarm == true %>  
 alarms  :
-    response-code:
-        label: Response code
-        notification_plan_id: <%= @notification_plan_id %>
-        criteria: |
+  response-code:
+    label: Response code
+    notification_plan_id: <%= @notification_plan_id %>
+    criteria: |
 <% if @consecutive_count != nil -%>
             :set consecutiveCount=<%= @consecutive_count %>
 <% end -%>
-            if (metric['code'] != '<%= @expected_code || 200 %>') {
-              return new AlarmStatus(CRITICAL, 'Server returned #{code}, expected <%= @expected_code || 200 %>');
+            if (metric['code'] != '<%= @info['expected_code'] || 200 %>') {
+              return new AlarmStatus(CRITICAL, 'Server returned #{code}, expected <%= @info['expected_code'] || 200 %>');
             }
             return new AlarmStatus(OK, 'Server returned #{code} as expected');
 <% if /^https:/.match(@url) -%>
-    cert-expiry:
-        label: Certificate validity
-        notification_plan_id: <%= @notification_plan_id %>
-        criteria: |
+  cert-expiry:
+    label: Certificate validity
+    notification_plan_id: <%= @notification_plan_id %>
+    criteria: |
 <% if @consecutive_count != nil -%>
             :set consecutiveCount=<%= @consecutive_count %>
 <% end -%>
@@ -49,4 +50,5 @@ alarms  :
               return new AlarmStatus(WARNING, 'Certificate expires in less than 1 week');
             }
             return new AlarmStatus(OK, 'Certificate valid for more than 1 week');
+<% end -%>
 <% end -%>

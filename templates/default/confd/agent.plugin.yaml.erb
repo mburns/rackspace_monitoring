@@ -1,0 +1,21 @@
+# CHEF MANAGED FILE: DO NOT EDIT
+# Controlling Cookbook: <%= @cookbook_name %>
+#
+
+type    : <%= @type || 'agent.plugin' %>
+label   : <%= @label %>
+disabled: <%= @disabled %>
+period  : <%= @period || 60 %>
+timeout : <%= @timeout || 30 %>
+details :
+  file  : <%= @file %>
+  args  : <%= @args %>
+  timeout: <%= @timeout || 30 %>
+<% if @alarm %>
+alarms  :
+  alarm-queue:
+    label: <%= @alarm['label'] %>
+    notification_plan_id: <%= @notification_plan_id %>
+    criteria: |
+      <%= @alarm['criteria'] %>
+<% end %>

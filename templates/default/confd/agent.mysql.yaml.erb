@@ -1,0 +1,19 @@
+# CHEF MANAGED FILE: DO NOT EDIT
+# Controlling Cookbook: <%= @cookbook_name %>
+#
+
+<%
+  require 'chef/sugar'
+  ipaddress = Chef::Sugar::IP.best_ip_for(node, node)
+%>
+
+type: agent.mysql
+label: Local MYSQL check on <%= ipaddress %>
+disabled: <%= @disabled %>
+period: <%= @period %>
+timeout: <%= @timeout %>
+details:
+  host: localhost
+  port: <%= @port || node['mysql']['port'] %>
+  username: <%= node['monitoring']['agent']['mysql']['user'] %>
+  password: <%= node['monitoring']['agent']['mysql']['password'] %>

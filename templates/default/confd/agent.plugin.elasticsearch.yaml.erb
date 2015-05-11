@@ -2,14 +2,17 @@
 # Controlling Cookbook: <%= @cookbook_name %>
 #
 
+<% port = @port || '9200' -%>
+
 type    : agent.plugin
 label   : <%= @label %>
-disabled: <%= node['monitoring']['network']['disabled'] %>
+disabled: <%= @disabled %>
 period  : <%= @period || 120 %>
 timeout : <%= @timeout || 30 %>
 details :
     file: elasticsearch.py
-    args: [ "--host=http://<%= node[:fqdn] %>:9200/", "--cluster-health" ]
+    args: [ "--host=http://<%= node[:fqdn] %>:<%= port %>/", "--cluster-health" ]
+<% if @alarm == true %>
 alarms  :
     cluster-status:
         label: Cluster health
@@ -31,3 +34,4 @@ alarms  :
               return new AlarmStatus(OK, 'All primary and replica shards are active.');
             }
             return new AlarmStatus(CRITICAL, 'Unknown cluster status received: #{status}.');
+<% end -%>

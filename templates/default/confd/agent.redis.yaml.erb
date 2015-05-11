@@ -2,23 +2,26 @@
 # Controlling Cookbook: <%= @cookbook_name %>
 #
 
-<% _host = @host || 'localhost' -%>
-<% _port = @port || '6379' -%>
+<% host = @host || 'localhost' -%>
+<% port = @port || '6379' -%>
+<% timeout = @timeout || 5  -%>
 
 type    : agent.redis
 label   : <%= @label %>
-disabled: <%= node['monitoring']['network']['disabled'] %>
+disabled: <%= @disabled %>
 period  : <%= @period || 60 %>
-timeout : <%= @timeout || 5 %>
+timeout : <%= timeout %>
 details :
-   host : <%= _host %> 
-   port : <%= _port %> 
+  host  : <%= host %> 
+  port  : <%= port %> 
+<% if @alarm %>   
 alarms  :
-    info-reply:
-        label: Response time
-        notification_plan_id: <%= @notification_plan_id %>
-        criteria: |
+  info-reply:
+    label: Response time
+    notification_plan_id: <%= @notification_plan_id %>
+    criteria: |
 <% if @consecutive_count != nil -%>
-            :set consecutiveCount=<%= @consecutive_count %>
+        :set consecutiveCount=<%= @consecutive_count %>
 <% end -%>
-            return new AlarmStatus(OK, 'Redis responded to INFO in less than <%= @timeout || 5 %>s');
+        return new AlarmStatus(OK, 'Redis responded to INFO in less than <%= timeout %>s');
+<% end -%>

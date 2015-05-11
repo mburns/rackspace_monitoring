@@ -4,11 +4,12 @@
 
 type    : agent.plugin
 label   : <%= @label %>
-disabled: <%= node['monitoring']['network']['disabled'] %>
+disabled: <%= @disabled %>
 period  : <%= @period || 120 %>
 timeout : <%= @timeout || 30 %>
 details :
     file: ntp_offset.sh
+<% if @alarm %>   
 alarms  :
     ntp-offset:
         label: Clock sync
@@ -27,3 +28,4 @@ alarms  :
               return new AlarmStatus(WARNING, 'ntpd is only using #{active_peers} peers to sync the system clock');
             }
             return new AlarmStatus(OK, 'system clock is in sync with #{active_peers} peers');
+<% end -%>

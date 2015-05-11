@@ -2,23 +2,25 @@
 # Controlling Cookbook: <%= @cookbook_name %>
 #
 
+<% service_name = @service_name || @target -%>
+
 type    : agent.plugin
-label   : <%= @service_name %> Service Monitor
-disabled: <%= node['monitoring']['service']['disabled'] %>
-period  : <%= node['monitoring']['service']['period'] %>
-timeout : <%= node['monitoring']['service']['timeout'] %>
+label   : <%= service_name %> Service Monitor
+disabled: <%= @disabled %>
+period  : <%= @period || 60 %>
+timeout : <%= @timeout || 30 %>
 details :
     file: service_mon.sh
-    args: [<%= @service_name %>]
+    args: [<%= service_name %>]
     timeout: 15000
-<% if node['monitoring']['service']['alarm'] == true %>
+<% if @alarm %>
 alarms  :
     alarm-service:
         label: <%= @service_name %> Service Running
-        notification_plan_id: <%= node['monitoring']['notification_plan_id'] %>
+        notification_plan_id: <%= @notification_plan_id %>
         criteria: |
             if (metric['status'] == 'CRITICAL') {
-              return new AlarmStatus(CRITICAL, 'Service <%= @service_name %> is NOT running');
+              return new AlarmStatus(CRITICAL, 'Service <%= service_name %> is NOT running');
             }
-            return new AlarmStatus(OK, 'Service <%= @service_name %> is running');
+            return new AlarmStatus(OK, 'Service <%= service_name %> is running');
 <% end %>
