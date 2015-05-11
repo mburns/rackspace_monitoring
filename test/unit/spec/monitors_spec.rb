@@ -2,9 +2,7 @@
 
 require_relative 'spec_helper'
 
-# this will pass on templatestack, fail elsewhere, forcing you to
-# write those chefspec tests you always were avoiding
-describe 'platformstack::monitors' do
+describe 'rackspace_monitoring::checks' do
   before { stub_resources }
   supported_platforms.each do |platform, versions|
     versions.each do |version|
@@ -27,11 +25,11 @@ describe 'platformstack::monitors' do
               uri: '/',
               name: 'chefspec_monitor'
             }
-            node.set['monitoring']['custom_monitors']['name'] = []
-            node.set['monitoring']['custom_monitors']['name'].push('chefspec-monitor')
-            node.set['monitoring']['custom_monitors']['chefspec-monitor']['source'] = 'chefspec_monitor.yaml.erb'
-            node.set['monitoring']['custom_monitors']['chefspec-monitor']['cookbook'] = 'chefspec_book'
-            node.set['monitoring']['custom_monitors']['chefspec-monitor']['variables'] = { warning: 'foo' }
+            node.set['monitoring']['custom']['name'] = []
+            node.set['monitoring']['custom']['name'].push('chefspec-monitor')
+            node.set['monitoring']['custom']['chefspec-monitor']['source'] = 'chefspec_monitor.yaml.erb'
+            node.set['monitoring']['custom']['chefspec-monitor']['cookbook'] = 'chefspec_book'
+            node.set['monitoring']['custom']['chefspec-monitor']['variables'] = { warning: 'foo' }
           end.converge(described_recipe)
         end
 
@@ -47,25 +45,25 @@ describe 'platformstack::monitors' do
         end
 
         it 'creates templates for specific monitors' do
-          expect(chef_run).to create_template('/etc/rackspace-monitoring-agent.conf.d/monitoring-cpu.yaml')
-          expect(chef_run).to create_template('/etc/rackspace-monitoring-agent.conf.d/monitoring-disk.yaml')
-          expect(chef_run).to create_template('/etc/rackspace-monitoring-agent.conf.d/monitoring-load.yaml')
-          expect(chef_run).to create_template('/etc/rackspace-monitoring-agent.conf.d/monitoring-memory.yaml')
-          expect(chef_run).to create_template('/etc/rackspace-monitoring-agent.conf.d/monitoring-network.yaml')
-          expect(chef_run).to create_template('/etc/rackspace-monitoring-agent.conf.d/monitoring-filesystem-_slash_.yaml')
-          expect(chef_run).to create_template('/etc/rackspace-monitoring-agent.conf.d/monitoring-plugin-chef-client.yaml')
+          expect(chef_run).to create_template('/etc/rackspace-monitoring-agent.conf.d/agent.cpu.yaml')
+          expect(chef_run).to create_template('/etc/rackspace-monitoring-agent.conf.d/agent.disk.yaml')
+          expect(chef_run).to create_template('/etc/rackspace-monitoring-agent.conf.d/agent.load.yaml')
+          expect(chef_run).to create_template('/etc/rackspace-monitoring-agent.conf.d/agent.memory.yaml')
+          expect(chef_run).to create_template('/etc/rackspace-monitoring-agent.conf.d/agent.network.yaml')
+          expect(chef_run).to create_template('/etc/rackspace-monitoring-agent.conf.d/agent.filesystem._slash_.yaml')
+          expect(chef_run).to create_template('/etc/rackspace-monitoring-agent.conf.d/agent.plugin.chef-client.yaml')
 
           if platform == 'ubuntu' && version == '12.04'
-            expect(chef_run).to create_template('/etc/rackspace-monitoring-agent.conf.d/monitoring-filesystem-_slash_boot.yaml')
-            expect(chef_run).to create_template('/etc/rackspace-monitoring-agent.conf.d/monitoring-filesystem-_slash_vagrant.yaml')
+            expect(chef_run).to create_template('/etc/rackspace-monitoring-agent.conf.d/agent.filesystem._slash_boot.yaml')
+            expect(chef_run).to create_template('/etc/rackspace-monitoring-agent.conf.d/agent.filesystem._slash_vagrant.yaml')
           end
 
           if platform == 'ubuntu' && version == '14.04'
-            expect(chef_run).to create_template('/etc/rackspace-monitoring-agent.conf.d/monitoring-filesystem-_slash_sys_slash_fs_slash_pstore.yaml')
+            expect(chef_run).to create_template('/etc/rackspace-monitoring-agent.conf.d/agent.filesystem._slash_sys_slash_fs_slash_pstore.yaml')
           end
 
           if platform == 'centos'
-            expect(chef_run).to create_template('/etc/rackspace-monitoring-agent.conf.d/monitoring-filesystem-_slash_home.yaml')
+            expect(chef_run).to create_template('/etc/rackspace-monitoring-agent.conf.d/agent.filesystem._slash_home.yaml')
           end
         end
 

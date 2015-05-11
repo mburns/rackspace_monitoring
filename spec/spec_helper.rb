@@ -1,16 +1,13 @@
 # Added by ChefSpec
 require 'chefspec'
+require 'chefspec/berkshelf'
 
 # Uncomment to use ChefSpec's Berkshelf extension
 require 'chefspec/berkshelf'
 
 RSpec.configure do |config|
-  # Specify the path for Chef Solo to find cookbooks
-  # config.cookbook_path = '/var/cookbooks'
-
-  # Specify the path for Chef Solo to find roles
-  # config.role_path = '/var/roles'
-
+  config.formatter = :documentation
+  
   # Specify the Chef log_level (default: :warn)
   config.log_level = :debug
 
