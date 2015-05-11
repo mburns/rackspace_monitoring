@@ -28,15 +28,21 @@ platforms:
 suites:
   - name: default
     driver:
-      vm_hostname: rackspace-monitoring-vm.example.com
+      vm_hostname: rackspace-monitoring-vm
     run_list:
-      - recipe[rackspace_monitoring::default]
       - recipe[rackspace_monitoring::agent]
+      - recipe[rackspace_monitoring::checks]
     exclude: ['ubuntu-12.04', 'centos-6.6']
     attributes:
       monitoring:
         agent:
           token: '0000000000000000000000000000000000000000000000000000000000000000.000000'
+        enabled: false
+        remote_http:
+          example:
+            target: 'example.com'
+            disabled: true
       rackspace:
         cloud_credentials:
+          username: ChangeMe
           api_key: '00000000000000000000000000000000'
