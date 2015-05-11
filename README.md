@@ -23,13 +23,13 @@ All you need to use Rackspace Monitoring is a Rackspace account. Set these attri
     <td><tt>['rackspace']['cloud_credentials']['username']</tt></td>
     <td>String</td>
     <td>Your Rackspace account (**required**)</td>
-    <td><tt>`nil`</tt></td>
+    <td><tt>nil</tt></td>
   </tr>
   <tr>
     <td><tt>['rackspace']['cloud_credentials']['api_key']</tt></td>
     <td>String</td>
     <td>Your Rackspace API Key (**required**)</td>
-    <td><tt>`nil`</tt></td>
+    <td><tt>nil</tt></td>
   </tr>
   <tr>
     <td><tt>['monitoring']['notification_plan_id']</tt></td>
@@ -47,13 +47,13 @@ All you need to use Rackspace Monitoring is a Rackspace account. Set these attri
     <td><tt>['monitoring']['confd']</tt></td>
     <td>String</td>
     <td>Path to save check (.yaml) files</td>
-    <td><tt>`/etc/rackspace-monitoring-agent.conf.d`</tt></td>
+    <td><tt>/etc/rackspace-monitoring-agent.conf.d</tt></td>
   </tr>
   <tr>
     <td><tt>['monitoring']['plugind']</tt></td>
     <td>String</td>
     <td>Path to save plugins used by checks</td>
-    <td><tt>`/usr/lib/rackspace-monitoring-agent/plugins`</tt></td>
+    <td><tt>/usr/lib/rackspace-monitoring-agent/plugins</tt></td>
   </tr>
   <tr>
     <td><tt>['monitoring']['zones']</tt></td>
@@ -104,13 +104,13 @@ All you need to use Rackspace Monitoring is a Rackspace account. Set these attri
     <td><tt>['monitoring']['agent']['id']</tt></td>
     <td>String</td>
     <td>Path to save plugins used by checks</td>
-    <td><tt>`node['fqdn']`</tt></td>
+    <td><tt>node['fqdn']</tt></td>
   </tr>
   <tr>
     <td><tt>['monitoring']['agent']['channel']</tt></td>
     <td>String</td>
     <td></td>
-    <td><tt>`nil`</tt></td>
+    <td><tt>nil</tt></td>
   </tr>
   <tr>
     <td><tt>['monitoring']['agent']['version']</tt></td>
