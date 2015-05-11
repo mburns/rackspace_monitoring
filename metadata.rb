@@ -1,6 +1,6 @@
 name 'rackspace_monitoring'
 license 'Apache v2.0'
-version '0.4.1'
+version '0.4.2'
 description 'Installs/Configures Rackspace Monitoring'
 long_description IO.read(File.join(File.dirname(__FILE__), 'README.md'))
 
