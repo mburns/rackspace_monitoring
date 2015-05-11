@@ -24,7 +24,8 @@ task style: ['style:chef', 'style:ruby']
 # Rspec and ChefSpec
 desc 'Run ChefSpec unit tests'
 RSpec::Core::RakeTask.new(:spec) do |t|
-  t.rspec_opts = 'test/unit'
+  t.pattern = 'spec/**/*_spec.rb'
+  t.verbose = true
 end
 
 # Integration tests - kitchen.ci
