@@ -36,6 +36,7 @@ The [Rackspace Monitoring Agent](https://github.com/virgo-agent-toolkit/rackspac
 * `node['monitoring']['agent']['id']` ('npTechnicalContactsEmail')
 * `node['monitoring']['agent']['channel']`
 * `node['monitoring']['agent']['version']` ('latest')
+
 ```shell
 rackspac_monitoring_agent 'foo' do
   token 'bar'
